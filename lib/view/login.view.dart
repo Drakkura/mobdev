@@ -11,38 +11,41 @@ class LoginView extends StatelessWidget {
   LoginView({Key? key}) : super(key: key);
   final TextEditingController emailController = TextEditingController();
   final TextEditingController passwordController = TextEditingController();
-  
- Future<void> _login(BuildContext context) async {
-  String usersJson = await DefaultAssetBundle.of(context).loadString('assets/json/users.json');
-  List<dynamic> users = jsonDecode(usersJson);
 
-  String enteredEmail = emailController.text;
-  String enteredPassword = passwordController.text;
+  Future<void> _login(BuildContext context) async {
+    String usersJson = await DefaultAssetBundle.of(context)
+        .loadString('assets/json/users.json');
+    List<dynamic> users = jsonDecode(usersJson);
 
-  bool isValidUser = users.any((user) =>
-      user['email'] == enteredEmail && user['password'] == enteredPassword);
+    String enteredEmail = emailController.text;
+    String enteredPassword = passwordController.text;
 
-  if (isValidUser) {
-    Navigator.pushReplacement(
-      context,
-      MaterialPageRoute(builder: (context) => Dashboard()), // Navigate to the Dashboard page
-    );
-  } else {
-    showDialog(
-      context: context,
-      builder: (context) => AlertDialog(
-        title: Text('Error'),
-        content: Text('Invalid email or password. Please try again.'),
-        actions: <Widget>[
-          TextButton(
-            onPressed: () => Navigator.of(context).pop(),
-            child: Text('OK'),
-          ),
-        ],
-      ),
-    );
+    bool isValidUser = users.any((user) =>
+        user['email'] == enteredEmail && user['password'] == enteredPassword);
+
+    if (isValidUser) {
+      Navigator.pushReplacement(
+        context,
+        MaterialPageRoute(
+            builder: (context) =>
+                Dashboard()), // Navigate to the Dashboard page
+      );
+    } else {
+      showDialog(
+        context: context,
+        builder: (context) => AlertDialog(
+          title: Text('Error'),
+          content: Text('Invalid email or password. Please try again.'),
+          actions: <Widget>[
+            TextButton(
+              onPressed: () => Navigator.of(context).pop(),
+              child: Text('OK'),
+            ),
+          ],
+        ),
+      );
+    }
   }
-}
 
   @override
   Widget build(BuildContext context) {
@@ -56,13 +59,16 @@ class LoginView extends StatelessWidget {
             width: 420,
           ),
         ),
-        title: Text(''), // Empty text to occupy the space and center the app bar title
+        title: Text(
+            ''), // Empty text to occupy the space and center the app bar title
         actions: [
           IconButton(
             onPressed: () {
               Navigator.pushReplacement(
                 context,
-                MaterialPageRoute(builder: (context) => Dashboard()), // Navigate to the Dashboard page
+                MaterialPageRoute(
+                    builder: (context) =>
+                        Dashboard()), // Navigate to the Dashboard page
               );
             },
             icon: Icon(Icons.login),
@@ -89,6 +95,14 @@ class LoginView extends StatelessWidget {
                     ),
                   ),
                 ),
+                SizedBox(height: 10), // Jarak antara teks dan gambar
+                Center(
+                  child: Image.asset(
+                    'assets/images/Time.jpg',
+                    width: 250, // Sesuaikan lebar gambar sesuai kebutuhan
+                    height: 250, // Sesuaikan tinggi gambar sesuai kebutuhan
+                  ),
+                ),
                 SizedBox(height: 20),
                 Text(
                   'Login to your account',
@@ -98,14 +112,12 @@ class LoginView extends StatelessWidget {
                   ),
                 ),
                 SizedBox(height: 20),
-
                 TextFormGlobal(
                   controller: emailController,
                   text: 'Email',
                   textInputType: TextInputType.emailAddress,
                   obscure: false,
                 ),
-
                 SizedBox(height: 20),
                 TextFormGlobal(
                   controller: passwordController,
@@ -113,26 +125,28 @@ class LoginView extends StatelessWidget {
                   textInputType: TextInputType.text,
                   obscure: true,
                 ),
-
                 SizedBox(height: 20),
                 GlobalButton(
                   onPressed: () => _login(context),
                 ),
                 SizedBox(height: 25),
-                AlternateLogin(),
-                SizedBox(height: 25),
-                Center( // Centered button text to navigate to register page
+                Center(
+                  // Centered button text to navigate to register page
                   child: TextButton(
                     onPressed: () {
-                      Navigator.push(context, MaterialPageRoute(builder: (context) => RegistrationPage()));
+                      Navigator.push(
+                          context,
+                          MaterialPageRoute(
+                              builder: (context) => RegistrationPage()));
                     },
                     child: Text(
-                      'Don\'t have an account? Register here', 
+                      'Don\'t have an account? Register here',
                       style: TextStyle(
                         color: Colors.black,
                         fontSize: 16,
                       ),
-                      textAlign: TextAlign.center, // Center align the button text
+                      textAlign:
+                          TextAlign.center, // Center align the button text
                     ),
                   ),
                 ),

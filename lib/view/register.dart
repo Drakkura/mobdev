@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:login_sahabat_mahasiswa/view/login.view.dart';
 import 'package:login_sahabat_mahasiswa/utils/colors.dart';
+import 'package:login_sahabat_mahasiswa/view/widget/button.dart';
+import 'package:login_sahabat_mahasiswa/view/widget/form.dart';
 
 void main() {
   runApp(const MyApp());
@@ -59,6 +61,8 @@ class RegistrationPage extends StatefulWidget {
 
 class _RegistrationPageState extends State<RegistrationPage> {
   final _formKey = GlobalKey<FormState>();
+  final TextEditingController fnameController = TextEditingController();
+  final TextEditingController lnameController = TextEditingController();
   // ignore: unused_field
   late String _firstName,
       // ignore: unused_field
@@ -79,20 +83,19 @@ class _RegistrationPageState extends State<RegistrationPage> {
   bool _obscureText = true;
   _submitForm() {
     showDialog(
-      context: context, 
-      builder: (context){
-        return AlertDialog(
-        content: const Text('Registration successful'),
-        actions: [
-          ElevatedButton(
-            onPressed: () {
-              Navigator.pop(context);
-            }, child: null,
-          )
-        ]
-        );
-      }
-    );
+        context: context,
+        builder: (context) {
+          return AlertDialog(
+              content: const Text('Registration successful'),
+              actions: [
+                ElevatedButton(
+                  onPressed: () {
+                    Navigator.pop(context);
+                  },
+                  child: null,
+                )
+              ]);
+        });
   }
 
   @override
@@ -104,7 +107,8 @@ class _RegistrationPageState extends State<RegistrationPage> {
         actions: <Widget>[
           TextButton(
             onPressed: () {
-              Navigator.pushReplacementNamed(context, '/login');
+              Navigator.push(context,
+                  MaterialPageRoute(builder: (context) => LoginView()));
             },
             child: const Text(
               'Login',
@@ -119,7 +123,7 @@ class _RegistrationPageState extends State<RegistrationPage> {
             child: SingleChildScrollView(
               child: Container(
                 padding: const EdgeInsets.all(20.0),
-                width: MediaQuery.of(context).size.width * 0.8,
+                // width: MediaQuery.of(context).size.width * 0.8,
                 decoration: BoxDecoration(
                   color: Colors.white.withOpacity(0.8),
                   borderRadius: BorderRadius.circular(10.0),
@@ -420,13 +424,36 @@ class _RegistrationPageState extends State<RegistrationPage> {
                       Center(
                         child: ElevatedButton(
                           onPressed: _submitForm,
-                          child: const Text('Submit'),
+                          child: const Text(
+                            'Submit',
+                            style: TextStyle(
+                              color: Colors.white, // Warna teks
+                              fontSize: 18,
+                              fontWeight: FontWeight.w600,
+                            ),
+                          ),
+                          style: ElevatedButton.styleFrom(
+                            backgroundColor: GlobalColors.secondColor,
+                            minimumSize: const Size(
+                                double.infinity, 50), // Ukuran minimum
+                            shape: RoundedRectangleBorder(
+                              borderRadius:
+                                  BorderRadius.circular(10), // Radius sudut
+                            ),
+                            elevation: 5, // Tinggi bayangan
+                            shadowColor:
+                                Colors.black.withOpacity(0.1), // Warna bayangan
+                          ),
                         ),
                       ),
+
                       const SizedBox(height: 10.0),
                       TextButton(
                         onPressed: () {
-                          Navigator.pushReplacement(context, MaterialPageRoute(builder: (context) => LoginView()));
+                          Navigator.pushReplacement(
+                              context,
+                              MaterialPageRoute(
+                                  builder: (context) => LoginView()));
                         },
                         child: Text(
                           'Sudah punya akun? Login',
@@ -446,6 +473,4 @@ class _RegistrationPageState extends State<RegistrationPage> {
       ),
     );
   }
- }
-
-
+}

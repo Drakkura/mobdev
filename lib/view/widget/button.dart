@@ -7,30 +7,24 @@ class GlobalButton extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return InkWell(
-      onTap: (){
-       
-      },
+      onTap: () {},
       child: Container(
         alignment: Alignment.center,
         height: 50,
         decoration: BoxDecoration(
-          color: GlobalColors.secondColor,
-          borderRadius: BorderRadius.circular(7),
-          boxShadow: [
-            BoxShadow(
-              color: Colors.black.withOpacity(0.1),
-              blurRadius: 10,
-            )
-          ]
-        ),
+            color: GlobalColors.secondColor,
+            borderRadius: BorderRadius.circular(10),
+            boxShadow: [
+              BoxShadow(
+                color: Colors.black.withOpacity(0.1),
+                blurRadius: 10,
+              )
+            ]),
         child: const Text(
           'Log In',
           style: TextStyle(
-            color: Colors.white,
-            fontSize: 18,
-            fontWeight: FontWeight.w600
-          ),
-          ),
+              color: Colors.white, fontSize: 18, fontWeight: FontWeight.w600),
+        ),
       ),
     );
   }
