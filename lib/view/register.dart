@@ -1,8 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:login_sahabat_mahasiswa/view/login.view.dart';
 import 'package:login_sahabat_mahasiswa/utils/colors.dart';
-import 'package:login_sahabat_mahasiswa/view/widget/button.dart';
-import 'package:login_sahabat_mahasiswa/view/widget/form.dart';
+import 'package:login_sahabat_mahasiswa/models/mysql.dart';
 
 void main() {
   runApp(const MyApp());
@@ -21,6 +20,34 @@ class MyApp extends StatelessWidget {
       ),
       home: const MyHomePage(title: 'Flutter Demo Home Page'),
     );
+  }
+}
+
+Future<void> registerUser(String firstName, String lastName, String username,
+    String email, String password) async {
+  try {
+    // Get a connection to the database
+    var conn = await MySQL().getConnection();
+
+    // Prepare the insert query with named parameters
+    var result = await conn.execute(
+      "INSERT INTO users (first_name, last_name, username, email, password) VALUES (:firstName, :lastName, :username, :email, :password)",
+      {
+        'firstName': firstName,
+        'lastName': lastName,
+        'username': username,
+        'email': email,
+        'password': password,
+      },
+    );
+
+    print('Inserted row id=${result.lastInsertID}');
+
+    // Close the connection
+    await conn.close();
+  } catch (e) {
+    print("Error: $e");
+    // Handle the error, e.g., show an alert dialog with the error message
   }
 }
 
@@ -61,8 +88,6 @@ class RegistrationPage extends StatefulWidget {
 
 class _RegistrationPageState extends State<RegistrationPage> {
   final _formKey = GlobalKey<FormState>();
-  final TextEditingController fnameController = TextEditingController();
-  final TextEditingController lnameController = TextEditingController();
   // ignore: unused_field
   late String _firstName,
       // ignore: unused_field
@@ -70,10 +95,8 @@ class _RegistrationPageState extends State<RegistrationPage> {
       // ignore: unused_field
       _username,
       // ignore: unused_field
-      _email,
-      _password,
-      // ignore: unused_field
-      _confirmPassword;
+      _email;
+  String _password = '';
 
   bool _passwordContainsUppercase = false;
   bool _passwordContainsNumber = false;
@@ -81,21 +104,50 @@ class _RegistrationPageState extends State<RegistrationPage> {
   bool _passwordLengthValid = false;
 
   bool _obscureText = true;
-  _submitForm() {
-    showDialog(
-        context: context,
-        builder: (context) {
-          return AlertDialog(
+  void _submitForm() {
+    if (_formKey.currentState!.validate()) {
+      _formKey.currentState!.save();
+
+      // Call the registerUser method with the user details
+      registerUser(_firstName, _lastName, _username, _email, _password)
+          .then((_) {
+        // Show a success dialog or navigate to another page
+        showDialog(
+          context: context,
+          builder: (context) {
+            return AlertDialog(
               content: const Text('Registration successful'),
               actions: [
                 ElevatedButton(
                   onPressed: () {
                     Navigator.pop(context);
                   },
-                  child: null,
+                  child: const Text('OK'),
                 )
-              ]);
-        });
+              ],
+            );
+          },
+        );
+      }).catchError((error) {
+        // Handle errors, e.g., show an error dialog
+        showDialog(
+          context: context,
+          builder: (context) {
+            return AlertDialog(
+              content: Text('Registration failed: $error'),
+              actions: [
+                ElevatedButton(
+                  onPressed: () {
+                    Navigator.pop(context);
+                  },
+                  child: const Text('OK'),
+                )
+              ],
+            );
+          },
+        );
+      });
+    }
   }
 
   @override
@@ -123,7 +175,6 @@ class _RegistrationPageState extends State<RegistrationPage> {
             child: SingleChildScrollView(
               child: Container(
                 padding: const EdgeInsets.all(20.0),
-                // width: MediaQuery.of(context).size.width * 0.8,
                 decoration: BoxDecoration(
                   color: Colors.white.withOpacity(0.8),
                   borderRadius: BorderRadius.circular(10.0),
@@ -278,7 +329,7 @@ class _RegistrationPageState extends State<RegistrationPage> {
                           }
                           return null;
                         },
-                        onSaved: (value) => _password = value!,
+                        onSaved: (value) => _password = value ?? '',
                       ),
 
                       const SizedBox(height: 15.0),
@@ -388,38 +439,6 @@ class _RegistrationPageState extends State<RegistrationPage> {
 
                       const SizedBox(height: 15.0),
 
-                      TextFormField(
-                        decoration: InputDecoration(
-                          labelText: 'Confirm Password',
-                          hintText: 'Confirm Your Password',
-                          contentPadding: const EdgeInsets.symmetric(
-                              vertical: 10.0, horizontal: 15.0),
-                          border: OutlineInputBorder(
-                            borderRadius: BorderRadius.circular(10.0),
-                          ),
-                          suffixIcon: IconButton(
-                            icon: Icon(
-                              _obscureText
-                                  ? Icons.visibility_off
-                                  : Icons.visibility,
-                            ),
-                            onPressed: () {
-                              setState(() {
-                                _obscureText = !_obscureText;
-                              });
-                            },
-                          ),
-                        ),
-                        obscureText: _obscureText,
-                        validator: (value) {
-                          if (value != _password) {
-                            return 'Passwords do not match';
-                          }
-                          return null;
-                        },
-                        onSaved: (value) => _confirmPassword = value!,
-                      ),
-
                       const SizedBox(height: 20.0),
                       Center(
                         child: ElevatedButton(
@@ -438,7 +457,7 @@ class _RegistrationPageState extends State<RegistrationPage> {
                                 double.infinity, 50), // Ukuran minimum
                             shape: RoundedRectangleBorder(
                               borderRadius:
-                                  BorderRadius.circular(10), // Radius sudut
+                                  BorderRadius.circular(7), // Radius sudut
                             ),
                             elevation: 5, // Tinggi bayangan
                             shadowColor:
@@ -446,7 +465,6 @@ class _RegistrationPageState extends State<RegistrationPage> {
                           ),
                         ),
                       ),
-
                       const SizedBox(height: 10.0),
                       TextButton(
                         onPressed: () {
@@ -455,11 +473,13 @@ class _RegistrationPageState extends State<RegistrationPage> {
                               MaterialPageRoute(
                                   builder: (context) => LoginView()));
                         },
-                        child: Text(
-                          'Sudah punya akun? Login',
-                          style: TextStyle(
-                            color: Colors.blue,
-                            decoration: TextDecoration.underline,
+                        child: Center(
+                          child: Text(
+                            'Sudah punya akun? Login',
+                            style: TextStyle(
+                              color: Colors.blue,
+                              decoration: TextDecoration.underline,
+                            ),
                           ),
                         ),
                       ),
