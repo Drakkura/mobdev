@@ -1,9 +1,6 @@
-import 'dart:convert';
 import 'package:flutter/material.dart';
 import 'package:login_sahabat_mahasiswa/utils/colors.dart';
 import 'package:login_sahabat_mahasiswa/view/dashboard.dart';
-import 'package:login_sahabat_mahasiswa/view/widget/alternate.login.dart';
-import 'package:login_sahabat_mahasiswa/view/widget/button.dart';
 import 'package:login_sahabat_mahasiswa/view/widget/form.dart';
 import 'package:login_sahabat_mahasiswa/view/register.dart';
 import 'package:firebase_auth/firebase_auth.dart';
@@ -15,7 +12,8 @@ class LoginView extends StatelessWidget {
 
   Future<void> _login(BuildContext context) async {
     try {
-      UserCredential userCredential = await FirebaseAuth.instance.signInWithEmailAndPassword(
+      UserCredential userCredential =
+          await FirebaseAuth.instance.signInWithEmailAndPassword(
         email: emailController.text,
         password: passwordController.text,
       );
@@ -150,28 +148,28 @@ class LoginView extends StatelessWidget {
                   obscure: true,
                 ),
                 SizedBox(height: 20),
-              ElevatedButton(
-                onPressed: () {
-                  _login(context);
-                },
-                child: Text(
-                  'Login',
-                  style: TextStyle(
-                    color: Colors.white,
-                    fontSize: 18,
-                    fontWeight: FontWeight.w600,
+                ElevatedButton(
+                  onPressed: () {
+                    _login(context);
+                  },
+                  child: Text(
+                    'Login',
+                    style: TextStyle(
+                      color: Colors.white,
+                      fontSize: 18,
+                      fontWeight: FontWeight.w600,
+                    ),
+                  ),
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor: GlobalColors.secondColor,
+                    minimumSize: const Size(double.infinity, 50),
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(7),
+                    ),
+                    elevation: 5,
+                    shadowColor: Colors.black.withOpacity(0.1),
                   ),
                 ),
-                style: ElevatedButton.styleFrom(
-                  backgroundColor: GlobalColors.secondColor,
-                  minimumSize: const Size(double.infinity, 50),
-                  shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(7),
-                  ),
-                  elevation: 5,
-                  shadowColor: Colors.black.withOpacity(0.1),
-                ),
-              ),
                 SizedBox(height: 25),
                 Center(
                   // Centered button text to navigate to register page

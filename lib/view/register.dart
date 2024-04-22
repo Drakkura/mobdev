@@ -1,7 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:login_sahabat_mahasiswa/view/login.view.dart';
 import 'package:login_sahabat_mahasiswa/utils/colors.dart';
-import 'package:login_sahabat_mahasiswa/models/mysql.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 
@@ -25,7 +24,8 @@ class MyApp extends StatelessWidget {
   }
 }
 
-Future<void> registerUser(String firstName, String lastName, String username, String email, String password) async {
+Future<void> registerUser(String firstName, String lastName, String username,
+    String email, String password) async {
   FirebaseAuth auth = FirebaseAuth.instance;
   FirebaseFirestore firestore = FirebaseFirestore.instance;
 
@@ -120,30 +120,27 @@ class _RegistrationPageState extends State<RegistrationPage> {
       // Call the registerUser method with the user details
       registerUser(_firstName, _lastName, _username, _email, _password);
       showDialog(
-          context: context,
-          builder: (context) {
-            return AlertDialog(
-              content: const Text('Registration successful'),
-              actions: [
-                ElevatedButton(
-                  onPressed: () {
-                    Navigator.pop(context);
-                    Navigator.pushReplacement(
-                      context,
-                      MaterialPageRoute(builder: (context) => LoginView()),
-                    );
-                  },
-                  child: const Text('OK'),
-                )
-              ],
-            );
-          },
-        );
+        context: context,
+        builder: (context) {
+          return AlertDialog(
+            content: const Text('Registration successful'),
+            actions: [
+              ElevatedButton(
+                onPressed: () {
+                  Navigator.pop(context);
+                  Navigator.pushReplacement(
+                    context,
+                    MaterialPageRoute(builder: (context) => LoginView()),
+                  );
+                },
+                child: const Text('OK'),
+              )
+            ],
+          );
+        },
+      );
     }
   }
-
-
-
 
   @override
   Widget build(BuildContext context) {
@@ -482,7 +479,6 @@ class _RegistrationPageState extends State<RegistrationPage> {
                   ),
                 ),
               ),
-
             ),
           ),
         ],
