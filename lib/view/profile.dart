@@ -1,8 +1,9 @@
 import 'dart:io';
-import 'package:login_sahabat_mahasiswa/settings/setting.dart';
-import 'package:login_sahabat_mahasiswa/view/widget/bottom.navigationbar.dart';
+
 import 'package:flutter/material.dart';
+import 'package:login_sahabat_mahasiswa/settings/setting.dart';
 import 'package:login_sahabat_mahasiswa/utils/colors.dart';
+import 'package:login_sahabat_mahasiswa/view/widget/bottom.navigationbar.dart';
 
 
 void main() {
@@ -140,12 +141,6 @@ class _EditProfilePageState extends State<EditProfilePage> {
               backgroundImage: AssetImage(profileImageUrl),
             ),
             SizedBox(height: 10),
-            ElevatedButton(
-              onPressed: () {
-                //_selectImage();
-              },
-              child: Text('Change Profile Image'),
-            ),
             SizedBox(height: 20),
             TextFormField(
               controller: nameController,
