@@ -6,6 +6,7 @@ import 'package:login_sahabat_mahasiswa/view/widget/alternate.login.dart';
 import 'package:login_sahabat_mahasiswa/view/widget/button.dart';
 import 'package:login_sahabat_mahasiswa/view/widget/form.dart';
 import 'package:login_sahabat_mahasiswa/view/register.dart';
+import 'package:firebase_auth/firebase_auth.dart';
 
 class LoginView extends StatelessWidget {
   LoginView({Key? key}) : super(key: key);
@@ -13,29 +14,57 @@ class LoginView extends StatelessWidget {
   final TextEditingController passwordController = TextEditingController();
 
   Future<void> _login(BuildContext context) async {
-    String usersJson = await DefaultAssetBundle.of(context)
-        .loadString('assets/json/users.json');
-    List<dynamic> users = jsonDecode(usersJson);
-
-    String enteredEmail = emailController.text;
-    String enteredPassword = passwordController.text;
-
-    bool isValidUser = users.any((user) =>
-        user['email'] == enteredEmail && user['password'] == enteredPassword);
-
-    if (isValidUser) {
-      Navigator.pushReplacement(
-        context,
-        MaterialPageRoute(
-            builder: (context) =>
-                Dashboard()), // Navigate to the Dashboard page
+    try {
+      UserCredential userCredential = await FirebaseAuth.instance.signInWithEmailAndPassword(
+        email: emailController.text,
+        password: passwordController.text,
       );
-    } else {
+
+      // Check if the user is signed in
+      if (userCredential.user != null) {
+        // Navigate to the Dashboard page
+        Navigator.pushReplacement(
+          context,
+          MaterialPageRoute(builder: (context) => Dashboard()),
+        );
+      } else {
+        // Show an error dialog
+        showDialog(
+          context: context,
+          builder: (context) => AlertDialog(
+            title: Text('Error'),
+            content: Text('Invalid email or password. Please try again.'),
+            actions: <Widget>[
+              TextButton(
+                onPressed: () => Navigator.of(context).pop(),
+                child: Text('OK'),
+              ),
+            ],
+          ),
+        );
+      }
+    } on FirebaseAuthException catch (e) {
+      // Handle Firebase authentication errors
       showDialog(
         context: context,
         builder: (context) => AlertDialog(
           title: Text('Error'),
-          content: Text('Invalid email or password. Please try again.'),
+          content: Text(e.message ?? 'An error occurred. Please try again.'),
+          actions: <Widget>[
+            TextButton(
+              onPressed: () => Navigator.of(context).pop(),
+              child: Text('OK'),
+            ),
+          ],
+        ),
+      );
+    } catch (e) {
+      // Handle other errors
+      showDialog(
+        context: context,
+        builder: (context) => AlertDialog(
+          title: Text('Error'),
+          content: Text('An error occurred. Please try again.'),
           actions: <Widget>[
             TextButton(
               onPressed: () => Navigator.of(context).pop(),
@@ -64,12 +93,7 @@ class LoginView extends StatelessWidget {
         actions: [
           IconButton(
             onPressed: () {
-              Navigator.pushReplacement(
-                context,
-                MaterialPageRoute(
-                    builder: (context) =>
-                        Dashboard()), // Navigate to the Dashboard page
-              );
+              _login(context);
             },
             icon: Icon(Icons.login),
             tooltip: 'Anon Login',
@@ -98,7 +122,7 @@ class LoginView extends StatelessWidget {
                 SizedBox(height: 10), // Jarak antara teks dan gambar
                 Center(
                   child: Image.asset(
-                    'assets/images/Time.jpg',
+                    'assets/images/Time.png',
                     width: 250, // Sesuaikan lebar gambar sesuai kebutuhan
                     height: 250, // Sesuaikan tinggi gambar sesuai kebutuhan
                   ),
@@ -126,9 +150,28 @@ class LoginView extends StatelessWidget {
                   obscure: true,
                 ),
                 SizedBox(height: 20),
-                GlobalButton(
-                  onPressed: () => _login(context),
+              ElevatedButton(
+                onPressed: () {
+                  _login(context);
+                },
+                child: Text(
+                  'Login',
+                  style: TextStyle(
+                    color: Colors.white,
+                    fontSize: 18,
+                    fontWeight: FontWeight.w600,
+                  ),
                 ),
+                style: ElevatedButton.styleFrom(
+                  backgroundColor: GlobalColors.secondColor,
+                  minimumSize: const Size(double.infinity, 50),
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(7),
+                  ),
+                  elevation: 5,
+                  shadowColor: Colors.black.withOpacity(0.1),
+                ),
+              ),
                 SizedBox(height: 25),
                 Center(
                   // Centered button text to navigate to register page

@@ -2,9 +2,9 @@ import 'package:mysql_client/mysql_client.dart';
 
 class MySQL {
   static String host = 'localhost', // Replace with your host IP
-      user = 'ODBC',
-      password = '1234',
-      db = 'sahabat_mahasiswa';
+                user = 'ODBC',
+                password = '1234',
+                db = 'sahabat_mahasiswa';
   static int port = 3306; // Replace with your MySQL server port
 
   MySQL();

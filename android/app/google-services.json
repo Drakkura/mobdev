@@ -1,13 +1,13 @@
 {
   "project_info": {
-    "project_number": "337060206489",
-    "project_id": "sahabatmahasiswa-f0545",
-    "storage_bucket": "sahabatmahasiswa-f0545.appspot.com"
+    "project_number": "1033041739513",
+    "project_id": "sahabatmahasiswa",
+    "storage_bucket": "sahabatmahasiswa.appspot.com"
   },
   "client": [
     {
       "client_info": {
-        "mobilesdk_app_id": "1:337060206489:android:75c436a85dff716b122508",
+        "mobilesdk_app_id": "1:1033041739513:android:ec20779665f48489c5ac28",
         "android_client_info": {
           "package_name": "com.example.login_sahabat_mahasiswa"
         }
@@ -15,26 +15,7 @@
       "oauth_client": [],
       "api_key": [
         {
-          "current_key": "AIzaSyAcPPWcay97fc8dCLAPOBhVngT-3Mxyp_s"
-        }
-      ],
-      "services": {
-        "appinvite_service": {
-          "other_platform_oauth_client": []
-        }
-      }
-    },
-    {
-      "client_info": {
-        "mobilesdk_app_id": "1:337060206489:android:e37cef5106b397bd122508",
-        "android_client_info": {
-          "package_name": "com.example.sahabatmahasiswa"
-        }
-      },
-      "oauth_client": [],
-      "api_key": [
-        {
-          "current_key": "AIzaSyAcPPWcay97fc8dCLAPOBhVngT-3Mxyp_s"
+          "current_key": "AIzaSyA2LiPP8HYZk9iCv9C5IHFc2bh3AWi5wpk"
         }
       ],
       "services": {

@@ -2,6 +2,8 @@ import 'package:flutter/material.dart';
 import 'package:login_sahabat_mahasiswa/view/login.view.dart';
 import 'package:login_sahabat_mahasiswa/utils/colors.dart';
 import 'package:login_sahabat_mahasiswa/models/mysql.dart';
+import 'package:firebase_auth/firebase_auth.dart';
+import 'package:cloud_firestore/cloud_firestore.dart';
 
 void main() {
   runApp(const MyApp());
@@ -23,31 +25,38 @@ class MyApp extends StatelessWidget {
   }
 }
 
-Future<void> registerUser(String firstName, String lastName, String username,
-    String email, String password) async {
-  try {
-    // Get a connection to the database
-    var conn = await MySQL().getConnection();
+Future<void> registerUser(String firstName, String lastName, String username, String email, String password) async {
+  FirebaseAuth auth = FirebaseAuth.instance;
+  FirebaseFirestore firestore = FirebaseFirestore.instance;
 
-    // Prepare the insert query with named parameters
-    var result = await conn.execute(
-      "INSERT INTO users (first_name, last_name, username, email, password) VALUES (:firstName, :lastName, :username, :email, :password)",
-      {
+  try {
+    // Create the user with email and password
+    UserCredential userCredential = await auth.createUserWithEmailAndPassword(
+      email: email,
+      password: password,
+    );
+
+    // Get the user from the credentials
+    User? user = userCredential.user;
+
+    // If the user is created, store the additional information in Firestore
+    if (user != null) {
+      await firestore.collection('users').doc(user.uid).set({
         'firstName': firstName,
         'lastName': lastName,
         'username': username,
-        'email': email,
-        'password': password,
-      },
-    );
-
-    print('Inserted row id=${result.lastInsertID}');
-
-    // Close the connection
-    await conn.close();
+        'email': email, // Optional, since email is already stored in auth
+      });
+      print('Registration successful, UID: ${user.uid}');
+    }
+  } on FirebaseAuthException catch (e) {
+    if (e.code == 'weak-password') {
+      print('The password provided is too weak.');
+    } else if (e.code == 'email-already-in-use') {
+      print('The account already exists for that email.');
+    }
   } catch (e) {
-    print("Error: $e");
-    // Handle the error, e.g., show an alert dialog with the error message
+    print(e);
   }
 }
 
@@ -109,10 +118,8 @@ class _RegistrationPageState extends State<RegistrationPage> {
       _formKey.currentState!.save();
 
       // Call the registerUser method with the user details
-      registerUser(_firstName, _lastName, _username, _email, _password)
-          .then((_) {
-        // Show a success dialog or navigate to another page
-        showDialog(
+      registerUser(_firstName, _lastName, _username, _email, _password);
+      showDialog(
           context: context,
           builder: (context) {
             return AlertDialog(
@@ -121,6 +128,10 @@ class _RegistrationPageState extends State<RegistrationPage> {
                 ElevatedButton(
                   onPressed: () {
                     Navigator.pop(context);
+                    Navigator.pushReplacement(
+                      context,
+                      MaterialPageRoute(builder: (context) => LoginView()),
+                    );
                   },
                   child: const Text('OK'),
                 )
@@ -128,27 +139,11 @@ class _RegistrationPageState extends State<RegistrationPage> {
             );
           },
         );
-      }).catchError((error) {
-        // Handle errors, e.g., show an error dialog
-        showDialog(
-          context: context,
-          builder: (context) {
-            return AlertDialog(
-              content: Text('Registration failed: $error'),
-              actions: [
-                ElevatedButton(
-                  onPressed: () {
-                    Navigator.pop(context);
-                  },
-                  child: const Text('OK'),
-                )
-              ],
-            );
-          },
-        );
-      });
     }
   }
+
+
+
 
   @override
   Widget build(BuildContext context) {
@@ -487,6 +482,7 @@ class _RegistrationPageState extends State<RegistrationPage> {
                   ),
                 ),
               ),
+
             ),
           ),
         ],

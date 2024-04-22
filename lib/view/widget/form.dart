@@ -20,7 +20,7 @@ class TextFormGlobal extends StatelessWidget {
       decoration: BoxDecoration(
           color: Colors.white,
           borderRadius: BorderRadius.circular(10),
-          border: Border.all(color: Colors.grey, width: 1),
+          border: Border.all(color: Colors.black, width: 1),
           boxShadow: [
             BoxShadow(
               color: Colors.black.withOpacity(0.1),
