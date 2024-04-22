@@ -41,24 +41,24 @@ class _DashboardState extends State<Dashboard> {
           crossAxisAlignment: CrossAxisAlignment.stretch,
           children: [
             SizedBox(
-              height: 40,
-              child: Row(
-                mainAxisAlignment: MainAxisAlignment.center,
-                children: [
-                  Expanded(
-                    child: Padding(
-                      padding: const EdgeInsets.symmetric(horizontal: 16.0),
-                      child: TextField(
-                        decoration: InputDecoration(
-                          hintText: 'Cari tugas Hari ini',
-                          prefixIcon: const Icon(Icons.search),
-                          border: OutlineInputBorder(
-                            borderRadius: BorderRadius.circular(20.0),
-                          ),
-                        ),
-                      ),
-                    ),
-                  ),
+  height: 40,
+  child: Row(
+    mainAxisAlignment: MainAxisAlignment.start, // Change alignment to start
+    children: [
+      Expanded(
+        child: Padding(
+          padding: const EdgeInsets.symmetric(horizontal: 16.0),
+          child: TextField(
+            decoration: InputDecoration(
+              hintText: 'Cari tugas Hari ini',
+              prefixIcon: const Icon(Icons.search),
+              border: OutlineInputBorder(
+                borderRadius: BorderRadius.circular(20.0),
+              ),
+            ),
+          ),
+        ),
+      ),
                   SizedBox(
                     width: MediaQuery.of(context).size.width / 4,
                     height: 40,

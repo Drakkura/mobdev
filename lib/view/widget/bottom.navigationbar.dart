@@ -17,27 +17,38 @@ class _CustomBottomNavigationBarState extends State<CustomBottomNavigationBar> {
   Widget build(BuildContext context) {
     return BottomNavigationBar(
       backgroundColor: Colors.blueGrey[900],
-      selectedItemColor: Colors.white,
+      selectedItemColor: Colors.grey[300],
       unselectedItemColor: Colors.grey[300],
       currentIndex: _selectedIndex,
+      selectedFontSize: 14.0, // Set the font size for selected item
+      unselectedFontSize: 14.0, // Set the font size for unselected items
       onTap: (index) {
         setState(() {
           _selectedIndex = index;
           // Navigate to the corresponding screen
           if (_selectedIndex == 0) {
-            Navigator.pushReplacement(
-              context,
-              MaterialPageRoute(builder: (context) => Dashboard()),
-            );
+            Navigator.push(
+            context,
+            PageRouteBuilder(
+              pageBuilder: (_, __, ___) => Dashboard(),
+              transitionDuration: Duration.zero, 
+            ),
+          );
           } else if (_selectedIndex == 1) {
             Navigator.pushReplacement(
               context,
-              MaterialPageRoute(builder: (context) => CalendarScreen()),
+              PageRouteBuilder(
+              pageBuilder: (_, __, ___) => CalendarScreen(),
+              transitionDuration: Duration.zero, 
+            ),
             );
           } else if (_selectedIndex == 2) {
             Navigator.pushReplacement(
               context,
-              MaterialPageRoute(builder: (context) => ProfilePage()),
+              PageRouteBuilder(
+              pageBuilder: (_, __, ___) => ProfilePage(),
+              transitionDuration: Duration.zero, 
+            ),
             );
           }
         });
