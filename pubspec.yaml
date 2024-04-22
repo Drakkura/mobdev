@@ -47,6 +47,8 @@ dependencies:
   flutter_rating_bar: ^4.0.0
   mysql_client: ^0.0.27
   http: ^1.2.0
+  firebase_database: ^10.5.2
+  syncfusion_flutter_calendar: ^25.1.40
 
 dev_dependencies:
   flutter_test:

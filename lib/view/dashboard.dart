@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:login_sahabat_mahasiswa/view/widget/bottom.navigationbar.dart';
+import 'package:login_sahabat_mahasiswa/utils/date_time.dart';
 
 class Dashboard extends StatefulWidget {
   const Dashboard({Key? key}) : super(key: key);
@@ -9,6 +10,28 @@ class Dashboard extends StatefulWidget {
 }
 
 class _DashboardState extends State<Dashboard> {
+  List<String> predefinedCategories = ['Kuliah', 'Pribadi', 'Belajar'];
+  String selectedCategory = 'Kuliah'; 
+  DateTime? selectedDate;
+TimeOfDay? selectedTime;
+
+Future<void> _selectDate(BuildContext context) async {
+  final DateTime? pickedDate = await DateTimePicker.selectDate(context, selectedDate);
+  if (pickedDate != null && pickedDate != selectedDate) {
+    setState(() {
+      selectedDate = pickedDate;
+    });
+  }
+}
+
+Future<void> _selectTime(BuildContext context) async {
+  final TimeOfDay? pickedTime = await DateTimePicker.selectTime(context, selectedTime);
+  if (pickedTime != null && pickedTime != selectedTime) {
+    setState(() {
+      selectedTime = pickedTime;
+    });
+  }
+}
   @override
   Widget build(BuildContext context) {
     const String welcomeText = 'Halo Yoga';
@@ -41,24 +64,24 @@ class _DashboardState extends State<Dashboard> {
           crossAxisAlignment: CrossAxisAlignment.stretch,
           children: [
             SizedBox(
-  height: 40,
-  child: Row(
-    mainAxisAlignment: MainAxisAlignment.start, // Change alignment to start
-    children: [
-      Expanded(
-        child: Padding(
-          padding: const EdgeInsets.symmetric(horizontal: 16.0),
-          child: TextField(
-            decoration: InputDecoration(
-              hintText: 'Cari tugas Hari ini',
-              prefixIcon: const Icon(Icons.search),
-              border: OutlineInputBorder(
-                borderRadius: BorderRadius.circular(20.0),
-              ),
-            ),
-          ),
-        ),
-      ),
+              height: 40,
+              child: Row(
+                mainAxisAlignment: MainAxisAlignment.start,
+                children: [
+                  Expanded(
+                    child: Padding(
+                      padding: const EdgeInsets.symmetric(horizontal: 16.0),
+                      child: TextField(
+                        decoration: InputDecoration(
+                          hintText: 'Cari tugas Hari ini',
+                          prefixIcon: const Icon(Icons.search),
+                          border: OutlineInputBorder(
+                            borderRadius: BorderRadius.circular(20.0),
+                          ),
+                        ),
+                      ),
+                    ),
+                  ),
                   SizedBox(
                     width: MediaQuery.of(context).size.width / 4,
                     height: 40,
@@ -176,36 +199,85 @@ class _DashboardState extends State<Dashboard> {
       floatingActionButton: FloatingActionButton(
         onPressed: () {
           showModalBottomSheet(
-            context: context,
-            isScrollControlled: true,
-            builder: (BuildContext context) {
-              return SingleChildScrollView(
-                child: Center(
-                  child: Container(
-                    padding: const EdgeInsets.all(16.0),
-                    child: Column(
-                      mainAxisSize: MainAxisSize.min,
-                      children: <Widget>[
-                        TextField(
-                          decoration: const InputDecoration(
-                            labelText: 'Nama',
-                            border: OutlineInputBorder(),
-                          ),
-                        ),
-                        const SizedBox(height: 16),
-                        ElevatedButton(
-                          onPressed: () {
-                            Navigator.pop(context);
-                          },
-                          child: const Text('Add Task'),
-                        ),
-                      ],
-                    ),
-                  ),
+  context: context,
+  isScrollControlled: true,
+  builder: (BuildContext context) {
+    return SingleChildScrollView(
+      child: Center(
+        child: Container(
+          padding: const EdgeInsets.all(16.0),
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: <Widget>[
+              TextField(
+                decoration: const InputDecoration(
+                  labelText: 'Nama',
+                  border: OutlineInputBorder(),
                 ),
-              );
-            },
-          );
+              ),
+              const SizedBox(height: 16),
+              TextField(
+                readOnly: true,
+                controller: TextEditingController(
+                  text: selectedDate != null
+                      ? "${selectedDate!.day}/${selectedDate!.month}/${selectedDate!.year}"
+                      : "",
+                ),
+                onTap: () => _selectDate(context),
+                decoration: const InputDecoration(
+                  labelText: 'Tanggal',
+                  border: OutlineInputBorder(),
+                  suffixIcon: Icon(Icons.calendar_today),
+                ),
+              ),
+              const SizedBox(height: 16),
+              TextField(
+                readOnly: true,
+                controller: TextEditingController(
+                  text: selectedTime != null
+                      ? "${selectedTime!.hour}:${selectedTime!.minute}"
+                      : "",
+                ),
+                onTap: () => _selectTime(context),
+                decoration: const InputDecoration(
+                  labelText: 'Jam',
+                  border: OutlineInputBorder(),
+                  suffixIcon: Icon(Icons.access_time),
+                ),
+              ),
+              const SizedBox(height: 16),
+              DropdownButtonFormField<String>(
+                value: selectedCategory,
+                onChanged: (String? newValue) {
+                  setState(() {
+                    selectedCategory = newValue!;
+                  });
+                },
+                items: predefinedCategories.map((String category) {
+                  return DropdownMenuItem<String>(
+                    value: category,
+                    child: Text(category),
+                  );
+                }).toList(),
+                decoration: const InputDecoration(
+                  labelText: 'Category',
+                  border: OutlineInputBorder(),
+                ),
+              ),
+              const SizedBox(height: 16),
+              ElevatedButton(
+                onPressed: () {
+                  Navigator.pop(context);
+                },
+                child: const Text('Add Task'),
+              ),
+            ],
+          ),
+        ),
+      ),
+    );
+  },
+);
         },
         child: const Icon(Icons.add),
       ),
