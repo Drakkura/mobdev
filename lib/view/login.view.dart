@@ -135,6 +135,7 @@ class LoginView extends StatelessWidget {
                 ),
                 SizedBox(height: 20),
                 TextFormGlobal(
+                  key: Key('emailField'),
                   controller: emailController,
                   text: 'Email',
                   textInputType: TextInputType.emailAddress,
@@ -142,6 +143,7 @@ class LoginView extends StatelessWidget {
                 ),
                 SizedBox(height: 20),
                 TextFormGlobal(
+                  key: Key('passwordField'),
                   controller: passwordController,
                   text: 'Password',
                   textInputType: TextInputType.text,
