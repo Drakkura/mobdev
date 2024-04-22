@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:login_sahabat_mahasiswa/utils/colors.dart';
 import 'package:login_sahabat_mahasiswa/view/dashboard.dart'; 
 import 'package:login_sahabat_mahasiswa/view/calendar.dart'; 
 import 'package:login_sahabat_mahasiswa/settings/setting.dart';
@@ -16,7 +17,7 @@ class _CustomBottomNavigationBarState extends State<CustomBottomNavigationBar> {
   @override
   Widget build(BuildContext context) {
     return BottomNavigationBar(
-      backgroundColor: Colors.blueGrey[900],
+      backgroundColor: GlobalColors.mainColor,
       selectedItemColor: Colors.grey[300],
       unselectedItemColor: Colors.grey[300],
       currentIndex: _selectedIndex,

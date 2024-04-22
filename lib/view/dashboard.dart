@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:login_sahabat_mahasiswa/view/widget/bottom.navigationbar.dart';
+import 'package:login_sahabat_mahasiswa/utils/colors.dart';
 
 class Dashboard extends StatefulWidget {
   const Dashboard({Key? key}) : super(key: key);
@@ -15,6 +16,7 @@ class _DashboardState extends State<Dashboard> {
     const String taskText = '3 Tugas Mendatang';
     return Scaffold(
       appBar: AppBar(
+        backgroundColor: GlobalColors.mainColor,
         automaticallyImplyLeading: false,
         title: const Column(
           crossAxisAlignment: CrossAxisAlignment.start,
@@ -24,12 +26,14 @@ class _DashboardState extends State<Dashboard> {
               style: TextStyle(
                 fontSize: 18.0,
                 fontWeight: FontWeight.bold,
+                color: Colors.white,
               ),
             ),
             Text(
               taskText,
               style: TextStyle(
                 fontSize: 14.0,
+                color: Colors.white,
               ),
             ),
           ],
@@ -41,53 +45,56 @@ class _DashboardState extends State<Dashboard> {
           crossAxisAlignment: CrossAxisAlignment.stretch,
           children: [
             SizedBox(
-  height: 40,
-  child: Row(
-    mainAxisAlignment: MainAxisAlignment.start, // Change alignment to start
-    children: [
-      Expanded(
-        child: Padding(
-          padding: const EdgeInsets.symmetric(horizontal: 16.0),
-          child: TextField(
-            decoration: InputDecoration(
-              hintText: 'Cari tugas Hari ini',
-              prefixIcon: const Icon(Icons.search),
-              border: OutlineInputBorder(
-                borderRadius: BorderRadius.circular(20.0),
-              ),
-            ),
-          ),
-        ),
-      ),
-                  SizedBox(
-                    width: MediaQuery.of(context).size.width / 4,
-                    height: 40,
-                    child: TextButton(
-                      onPressed: () {},
-                      style: ButtonStyle(
-                        backgroundColor: MaterialStateProperty.all<Color>(
-                          Colors.black.withOpacity(0.1),
-                        ),
-                        shape: MaterialStateProperty.all<OutlinedBorder>(
-                          RoundedRectangleBorder(
+              height: 40,
+              child: Row(
+                mainAxisAlignment: MainAxisAlignment.start,
+                children: [
+                  Expanded(
+                    child: Padding(
+                      padding: const EdgeInsets.only(right: 8.0), // Adjust the padding as needed
+                      child: TextField(
+                        decoration: InputDecoration(
+                          hintText: 'Cari tugas Hari ini',
+                          prefixIcon: const Icon(Icons.search),
+                          border: OutlineInputBorder(
                             borderRadius: BorderRadius.circular(20.0),
                           ),
                         ),
                       ),
-                      child: const Icon(
-                        Icons.filter_alt,
-                        color: Colors.black,
+                    ),
+                  ),
+                  Padding(
+                    padding: const EdgeInsets.only(left: 8.0), // Adjust the padding as needed
+                    child: SizedBox(
+                      width: MediaQuery.of(context).size.width / 4,
+                      height: 40,
+                      child: TextButton(
+                        onPressed: () {},
+                        style: ButtonStyle(
+                          backgroundColor: MaterialStateProperty.all<Color>(
+                            Colors.black.withOpacity(0.1),
+                          ),
+                          shape: MaterialStateProperty.all<OutlinedBorder>(
+                            RoundedRectangleBorder(
+                              borderRadius: BorderRadius.circular(20.0),
+                            ),
+                          ),
+                        ),
+                        child: const Icon(
+                          Icons.filter_alt,
+                          color: Colors.black,
+                        ),
                       ),
                     ),
                   ),
                 ],
               ),
+
             ),
             const SizedBox(height: 16),
-            SizedBox(
-              height: 40,
+            SingleChildScrollView(
+              scrollDirection: Axis.horizontal,
               child: Row(
-                mainAxisAlignment: MainAxisAlignment.center,
                 children: [
                   ElevatedButton(
                     onPressed: () {},
@@ -98,10 +105,10 @@ class _DashboardState extends State<Dashboard> {
                     ),
                     child: const Text(
                       'Semua',
-                      style: TextStyle(color: Colors.white),
+                      style: TextStyle(color: Colors.black),
                     ),
                   ),
-                  const SizedBox(width: 8.0),
+                  SizedBox(width: 8.0), // Gap between buttons
                   ElevatedButton(
                     onPressed: () {},
                     style: ElevatedButton.styleFrom(
@@ -109,9 +116,10 @@ class _DashboardState extends State<Dashboard> {
                         borderRadius: BorderRadius.circular(20.0),
                       ),
                     ),
-                    child: const Text('Kuliah'),
+                    child: const Text('Kuliah', style: TextStyle(color: Colors.black),
+                    ),
                   ),
-                  const SizedBox(width: 8.0),
+                  SizedBox(width: 8.0), // Gap between buttons
                   ElevatedButton(
                     onPressed: () {},
                     style: ElevatedButton.styleFrom(
@@ -119,9 +127,9 @@ class _DashboardState extends State<Dashboard> {
                         borderRadius: BorderRadius.circular(20.0),
                       ),
                     ),
-                    child: const Text('Pribadi'),
+                    child: const Text('Pribadi', style: TextStyle(color: Colors.black),),
                   ),
-                  const SizedBox(width: 8.0),
+                  SizedBox(width: 8.0), // Gap between buttons
                   ElevatedButton(
                     onPressed: () {},
                     style: ElevatedButton.styleFrom(
@@ -129,13 +137,13 @@ class _DashboardState extends State<Dashboard> {
                         borderRadius: BorderRadius.circular(20.0),
                       ),
                     ),
-                    child: const Text('Belajar'),
+                    child: const Text('Belajar', style: TextStyle(color: Colors.black),),
                   ),
                 ],
               ),
             ),
             const SizedBox(height: 16),
-            const Text(
+            Text(
               'Hari Ini',
               style: TextStyle(
                 fontSize: 20.0,
@@ -143,32 +151,44 @@ class _DashboardState extends State<Dashboard> {
               ),
             ),
             const SizedBox(height: 16),
-            Expanded(
-              child: ListView(
-                children: const [
-                  ScheduleItem(text: 'Tidur'),
-                  ScheduleItem(text: 'hmm'),
-                  ScheduleItem(text: 'kelas'),
+            Container(
+              padding: const EdgeInsets.only(left: 16, right: 0),
+              decoration: BoxDecoration(
+                color: Colors.white, // White-ish blue background color
+                borderRadius: BorderRadius.circular(15.0),
+                boxShadow: [
+                  BoxShadow(
+                    color: Colors.grey.withOpacity(0.5),
+                    spreadRadius: 5,
+                    blurRadius: 7,
+                    offset: Offset(0, 3), // changes position of shadow
+                  ),
+                ],
+              ),
+              child: Row(
+                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                children: [
+                  Expanded(
+                    child: Padding(
+                      padding: const EdgeInsets.only(right: 8.0),
+                      child: Text(
+                        'Sleep', // Replace with your task or reminder text
+                        style: TextStyle(
+                          fontSize: 16.0,
+                          color: Colors.black,
+                        ),
+                      ),
+                    ),
+                  ),
+                  Checkbox(
+                    value: false, // Set the value to true if the task is done
+                    onChanged: (bool? value) {},
+                  ),
                 ],
               ),
             ),
-            const SizedBox(height: 16),
-            const Text(
-              'Selesai Hari Ini',
-              style: TextStyle(
-                fontSize: 20.0,
-                fontWeight: FontWeight.bold,
-              ),
-            ),
-            const SizedBox(height: 16),
-            Expanded(
-              child: ListView(
-                children: const [
-                  CompletedItem(text: 'Sahur'),
-                  CompletedItem(text: 'tidur lagi'),
-                ],
-              ),
-            ),
+
+
           ],
         ),
       ),
@@ -194,10 +214,19 @@ class _DashboardState extends State<Dashboard> {
                         ),
                         const SizedBox(height: 16),
                         ElevatedButton(
-                          onPressed: () {
-                            Navigator.pop(context);
-                          },
-                          child: const Text('Add Task'),
+                          onPressed: () {},
+                          style: ElevatedButton.styleFrom(
+                            backgroundColor: Colors.deepPurple, // Example color
+                            shape: RoundedRectangleBorder(
+                              borderRadius: BorderRadius.circular(30.0),
+                            ),
+                            elevation: 4.0, // Adds some depth
+                            shadowColor: Colors.deepPurpleAccent,
+                          ),
+                          child: const Text(
+                            'Add Task',
+                            style: TextStyle(color: Colors.white),
+                          ),
                         ),
                       ],
                     ),
