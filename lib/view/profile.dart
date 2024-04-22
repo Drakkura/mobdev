@@ -2,6 +2,7 @@ import 'dart:io';
 import 'package:login_sahabat_mahasiswa/settings/setting.dart';
 import 'package:login_sahabat_mahasiswa/view/widget/bottom.navigationbar.dart';
 import 'package:flutter/material.dart';
+import 'package:login_sahabat_mahasiswa/utils/colors.dart';
 
 
 void main() {
@@ -37,8 +38,9 @@ class _ProfilePageState extends State<ProfilePage> {
     return Scaffold(
       bottomNavigationBar: CustomBottomNavigationBar(),
       appBar: AppBar(
+        backgroundColor: GlobalColors.mainColor,
         automaticallyImplyLeading: false,
-        title: Text('Profile'),
+        title: Text('Profile', style: TextStyle(color: Colors.white),),
       ),
       body: Center(
         child: Padding(
@@ -80,9 +82,12 @@ class _ProfilePageState extends State<ProfilePage> {
               ElevatedButton(
                 onPressed: () {
                   Navigator.pushReplacement(
-                    context,
-                    MaterialPageRoute(builder: (context) => Setting()),
-                  );
+                  context,
+                  PageRouteBuilder(
+                  pageBuilder: (_, __, ___) => Setting(),
+                  transitionDuration: Duration.zero, 
+                ),
+                );
                 },
                 child: Text('Settings'),
               ),

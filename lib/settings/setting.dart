@@ -3,6 +3,7 @@ import 'feedback.dart';
 import 'gantiBahasa.dart';
 import 'gantiTema.dart';
 import 'package:login_sahabat_mahasiswa/view/widget/bottom.navigationbar.dart';
+import 'package:login_sahabat_mahasiswa/utils/colors.dart';
 
 class Setting extends StatelessWidget {
   @override
@@ -39,7 +40,7 @@ class Setting extends StatelessWidget {
                     );
                   },
                   style: ElevatedButton.styleFrom(
-                    backgroundColor: Color(0xFF3E4553),
+                    backgroundColor: GlobalColors.mainColor,
                     shape: RoundedRectangleBorder(
                       borderRadius: BorderRadius.circular(15),
                     ),
@@ -65,7 +66,7 @@ class Setting extends StatelessWidget {
                     );
                   },
                   style: ElevatedButton.styleFrom(
-                    backgroundColor: Color(0xFF3E4553),
+                    backgroundColor: GlobalColors.mainColor,
                     shape: RoundedRectangleBorder(
                       borderRadius: BorderRadius.circular(15),
                     ),
@@ -91,7 +92,7 @@ class Setting extends StatelessWidget {
                     );
                   },
                   style: ElevatedButton.styleFrom(
-                    backgroundColor: Color(0xFF3E4553),
+                    backgroundColor: GlobalColors.mainColor,
                     shape: RoundedRectangleBorder(
                       borderRadius: BorderRadius.circular(15),
                     ),
