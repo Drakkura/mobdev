@@ -1,8 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:login_sahabat_mahasiswa/view/widget/bottom.navigationbar.dart';
 import 'package:login_sahabat_mahasiswa/utils/colors.dart';
-import 'package:login_sahabat_mahasiswa/utils/date_time.dart';
-import 'package:firebase_database/firebase_database.dart';
 
 class Dashboard extends StatefulWidget {
   const Dashboard({Key? key}) : super(key: key);
@@ -12,31 +10,6 @@ class Dashboard extends StatefulWidget {
 }
 
 class _DashboardState extends State<Dashboard> {
-  List<String> predefinedCategories = ['Kuliah', 'Pribadi', 'Belajar'];
-  String selectedCategory = 'Kuliah';
-  DateTime? selectedDate;
-  TimeOfDay? selectedTime;
-
-  Future<void> _selectDate(BuildContext context) async {
-    final DateTime? pickedDate =
-        await DateTimePicker.selectDate(context, selectedDate);
-    if (pickedDate != null && pickedDate != selectedDate) {
-      setState(() {
-        selectedDate = pickedDate;
-      });
-    }
-  }
-
-  Future<void> _selectTime(BuildContext context) async {
-    final TimeOfDay? pickedTime =
-        await DateTimePicker.selectTime(context, selectedTime);
-    if (pickedTime != null && pickedTime != selectedTime) {
-      setState(() {
-        selectedTime = pickedTime;
-      });
-    }
-  }
-
   @override
   Widget build(BuildContext context) {
     const String welcomeText = 'Halo Yoga';
@@ -78,8 +51,7 @@ class _DashboardState extends State<Dashboard> {
                 children: [
                   Expanded(
                     child: Padding(
-                      padding: const EdgeInsets.only(
-                          right: 8.0), // Adjust the padding as needed
+                      padding: const EdgeInsets.only(right: 8.0), // Adjust the padding as needed
                       child: TextField(
                         decoration: InputDecoration(
                           hintText: 'Cari tugas Hari ini',
@@ -92,8 +64,7 @@ class _DashboardState extends State<Dashboard> {
                     ),
                   ),
                   Padding(
-                    padding: const EdgeInsets.only(
-                        left: 8.0), // Adjust the padding as needed
+                    padding: const EdgeInsets.only(left: 8.0), // Adjust the padding as needed
                     child: SizedBox(
                       width: MediaQuery.of(context).size.width / 4,
                       height: 40,
@@ -118,6 +89,7 @@ class _DashboardState extends State<Dashboard> {
                   ),
                 ],
               ),
+
             ),
             const SizedBox(height: 16),
             SingleChildScrollView(
@@ -144,9 +116,7 @@ class _DashboardState extends State<Dashboard> {
                         borderRadius: BorderRadius.circular(20.0),
                       ),
                     ),
-                    child: const Text(
-                      'Kuliah',
-                      style: TextStyle(color: Colors.black),
+                    child: const Text('Kuliah', style: TextStyle(color: Colors.black),
                     ),
                   ),
                   SizedBox(width: 8.0), // Gap between buttons
@@ -157,10 +127,7 @@ class _DashboardState extends State<Dashboard> {
                         borderRadius: BorderRadius.circular(20.0),
                       ),
                     ),
-                    child: const Text(
-                      'Pribadi',
-                      style: TextStyle(color: Colors.black),
-                    ),
+                    child: const Text('Pribadi', style: TextStyle(color: Colors.black),),
                   ),
                   SizedBox(width: 8.0), // Gap between buttons
                   ElevatedButton(
@@ -170,10 +137,7 @@ class _DashboardState extends State<Dashboard> {
                         borderRadius: BorderRadius.circular(20.0),
                       ),
                     ),
-                    child: const Text(
-                      'Belajar',
-                      style: TextStyle(color: Colors.black),
-                    ),
+                    child: const Text('Belajar', style: TextStyle(color: Colors.black),),
                   ),
                 ],
               ),
@@ -223,6 +187,8 @@ class _DashboardState extends State<Dashboard> {
                 ],
               ),
             ),
+
+
           ],
         ),
       ),
@@ -247,83 +213,20 @@ class _DashboardState extends State<Dashboard> {
                           ),
                         ),
                         const SizedBox(height: 16),
-                        TextField(
-                          readOnly: true,
-                          controller: TextEditingController(
-                            text: selectedDate != null
-                                ? "${selectedDate!.day}/${selectedDate!.month}/${selectedDate!.year}"
-                                : "",
-                          ),
-                          onTap: () => _selectDate(context),
-                          decoration: const InputDecoration(
-                            labelText: 'Tanggal',
-                            border: OutlineInputBorder(),
-                            suffixIcon: Icon(Icons.calendar_today),
-                          ),
-                        ),
-                        const SizedBox(height: 16),
-                        TextField(
-                          readOnly: true,
-                          controller: TextEditingController(
-                            text: selectedTime != null
-                                ? "${selectedTime!.hour}:${selectedTime!.minute}"
-                                : "",
-                          ),
-                          onTap: () => _selectTime(context),
-                          decoration: const InputDecoration(
-                            labelText: 'Jam',
-                            border: OutlineInputBorder(),
-                            suffixIcon: Icon(Icons.access_time),
-                          ),
-                        ),
-                        const SizedBox(height: 16),
-                        DropdownButtonFormField<String>(
-                          value: selectedCategory,
-                          onChanged: (String? newValue) {
-                            setState(() {
-                              selectedCategory = newValue!;
-                            });
-                          },
-                          items: predefinedCategories.map((String category) {
-                            return DropdownMenuItem<String>(
-                              value: category,
-                              child: Text(category),
-                            );
-                          }).toList(),
-                          decoration: const InputDecoration(
-                            labelText: 'Category',
-                            border: OutlineInputBorder(),
-                          ),
-                        ),
-                        const SizedBox(height: 16),
                         ElevatedButton(
-                          onPressed: () {
-                            // Store data into Firebase database
-                            // Make sure to import the necessary Firebase packages
-                            final databaseRef =
-                                FirebaseDatabase.instance.reference();
-                            final newTaskRef = databaseRef
-                                .child('tasks')
-                                .push(); // Create a new reference for the task
-                            newTaskRef.set({
-                              'nama':
-                                  'Nama', // Replace 'Nama' with the actual name value from the TextField
-                              'tanggal': selectedDate != null
-                                  ? "${selectedDate!.day}/${selectedDate!.month}/${selectedDate!.year}"
-                                  : "", // Format the date as needed
-                              'jam': selectedTime != null
-                                  ? "${selectedTime!.hour}:${selectedTime!.minute}"
-                                  : "", // Format the time as needed
-                              'category': selectedCategory,
-                            }).then((_) {
-                              // If data is successfully stored, close the bottom sheet
-                              Navigator.pop(context);
-                            }).catchError((error) {
-                              // Handle error if data storage fails
-                              print("Failed to add task: $error");
-                            });
-                          },
-                          child: const Text('Add Task'),
+                          onPressed: () {},
+                          style: ElevatedButton.styleFrom(
+                            backgroundColor: Colors.deepPurple, // Example color
+                            shape: RoundedRectangleBorder(
+                              borderRadius: BorderRadius.circular(30.0),
+                            ),
+                            elevation: 4.0, // Adds some depth
+                            shadowColor: Colors.deepPurpleAccent,
+                          ),
+                          child: const Text(
+                            'Add Task',
+                            style: TextStyle(color: Colors.white),
+                          ),
                         ),
                       ],
                     ),
