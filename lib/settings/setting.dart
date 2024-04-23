@@ -17,7 +17,8 @@ class Setting extends StatelessWidget {
             padding: EdgeInsets.only(left: 10, top: 50), // Mengatur jarak panah
           ),
           Align(
-            alignment: Alignment.topCenter, // Menempatkan teks "Setting" dan tombol-tombol ke atas
+            alignment: Alignment
+                .topCenter, // Menempatkan teks "Setting" dan tombol-tombol ke atas
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.center,
               children: [
