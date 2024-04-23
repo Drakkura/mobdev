@@ -4,6 +4,8 @@ import 'package:flutter/material.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:login_sahabat_mahasiswa/settings/setting.dart';
 import 'package:login_sahabat_mahasiswa/utils/colors.dart';
+import 'package:login_sahabat_mahasiswa/view/calendar.dart';
+import 'package:login_sahabat_mahasiswa/view/dashboard.dart';
 import 'package:login_sahabat_mahasiswa/view/widget/bottom.navigationbar.dart';
 
 void main() {
@@ -34,7 +36,6 @@ class _ProfilePageState extends State<ProfilePage> {
   String username = "Tobanga";
   String profileImageUrl = "assets/images/logoaja.png";
 
-
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -42,16 +43,16 @@ class _ProfilePageState extends State<ProfilePage> {
       appBar: AppBar(
         backgroundColor: GlobalColors.mainColor,
         automaticallyImplyLeading: false,
-        title: Text(
+        title: const Text(
           'Profile',
           style: TextStyle(color: Colors.white),
         ),
         actions: [
           Padding(
-            padding: EdgeInsets.only(right: 8.0),
+            padding: const EdgeInsets.only(right: 8.0),
             child: IconButton(
-              color: Colors.white, 
-              icon: Icon(Icons.settings),
+              color: Colors.white,
+              icon: const Icon(Icons.settings),
               onPressed: () {
                 Navigator.pushReplacement(
                   context,
@@ -70,19 +71,19 @@ class _ProfilePageState extends State<ProfilePage> {
           padding: const EdgeInsets.symmetric(horizontal: 16.0),
           child: Column(
             children: <Widget>[
-              SizedBox(height: 25,),
+              const SizedBox(height: 25,),
               Text(
                 username,
-                style: TextStyle(fontSize: 20),
+                style: const TextStyle(fontSize: 20),
               ),
               Container(
-                    padding: EdgeInsets.all(1),
-                    width: 100,
-                    decoration: BoxDecoration(
-                      color: const Color.fromARGB(255, 0, 0, 0),
-                ),  
+                padding: const EdgeInsets.all(1),
+                width: 100,
+                decoration: const BoxDecoration(
+                  color: Color.fromARGB(255, 0, 0, 0),
+                ),
               ),
-              SizedBox(height: 20),
+              const SizedBox(height: 20),
               GestureDetector(
                 child: Stack(
                   children: [
@@ -95,11 +96,11 @@ class _ProfilePageState extends State<ProfilePage> {
                       bottom: 0,
                       right: 0,
                       child: Container(
-                        decoration: BoxDecoration(
+                        decoration: const BoxDecoration(
                           shape: BoxShape.circle,
                           color: Colors.white,
                         ),
-                        padding: EdgeInsets.all(4),
+                        padding: const EdgeInsets.all(4),
                         child: GestureDetector(
                           onTap: () async {
                             var result = await Navigator.pushNamed(context, '/edit', arguments: {
@@ -115,7 +116,7 @@ class _ProfilePageState extends State<ProfilePage> {
                               });
                             }
                           },
-                          child: Icon(Icons.edit),
+                          child: const Icon(Icons.edit),
                         ),
                       ),
                     ),
@@ -123,74 +124,97 @@ class _ProfilePageState extends State<ProfilePage> {
                 ),
               ),
 
-              SizedBox(height: 20),
-             Row(
+              const SizedBox(height: 20),
+              Row(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   Expanded(
                     child: Text(
                       name,
                       textAlign: TextAlign.center,
-                      style: TextStyle(fontSize: 20),
+                      style: const TextStyle(fontSize: 20),
                     ),
                   ),
-                  SizedBox(width: 4), 
-                  
+                  const SizedBox(width: 4),
+
                 ],
               ),
-              Container(margin: EdgeInsets.symmetric(vertical: 20),
-                    padding: EdgeInsets.all(1),
-                    decoration: BoxDecoration(
-                      color: const Color.fromARGB(255, 0, 0, 0),
-                      borderRadius: BorderRadius.circular(10),
-                ),  
+              Container(
+                margin: const EdgeInsets.symmetric(vertical: 20),
+                padding: const EdgeInsets.all(1),
+                decoration: BoxDecoration(
+                  color: const Color.fromARGB(255, 0, 0, 0),
+                  borderRadius: BorderRadius.circular(10),
+                ),
               ),
-              SizedBox(height: 5,),
+              const SizedBox(height: 5,),
               Row(
                 mainAxisAlignment: MainAxisAlignment.spaceEvenly,
                 children: [
-                  Container(
-                    margin: EdgeInsets.symmetric(vertical: 20),
-                    padding: EdgeInsets.all(20),
-                    width: MediaQuery.of(context).size.width / 2 - 10, 
-                    decoration: BoxDecoration(
-                      color: Colors.grey[200],
-                      borderRadius: BorderRadius.circular(10),
-                    ),
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                       Text(
-                          'Tugas dekat deadline!',
-                          style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold, color: Colors.red),
-                        ),
-                        Text(
-                          '  -2',
-                          style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
-                        ),
-                      ],
+                  GestureDetector(
+                    onTap: () {
+                      Navigator.pushReplacement(
+                        context,
+                        PageRouteBuilder(
+                          pageBuilder: (_, __, ___) => const Dashboard(),
+                          transitionDuration: Duration.zero,
+                        )
+                      );
+                    },
+                    child: Container(
+                      margin: const EdgeInsets.symmetric(vertical: 20),
+                      padding: const EdgeInsets.all(20),
+                      width: MediaQuery.of(context).size.width / 2 - 10,
+                      decoration: BoxDecoration(
+                        color: Colors.grey[200],
+                        borderRadius: BorderRadius.circular(10),
+                      ),
+                      child: const Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Text(
+                            'Deadline Tugas!',
+                            style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold, color: Colors.red),
+                          ),
+                          Text(
+                            ' 2',
+                            style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
+                          ),
+                        ],
+                      ),
                     ),
                   ),
-                  Container(
-                    margin: EdgeInsets.symmetric(vertical: 20),
-                    padding: EdgeInsets.all(20),
-                    width: MediaQuery.of(context).size.width / 2 - 50,
-                    decoration: BoxDecoration(
-                      color: Colors.grey[200],
-                      borderRadius: BorderRadius.circular(10),
-                    ),
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        Text(
-                          'Meeting: 8',
-                          style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
-                        ),
-                        Text(
-                          'Project Besar: 3',
-                          style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
-                        ),
-                      ],
+                  GestureDetector(
+                    onTap: () {
+                      Navigator.pushReplacement(
+                        context,
+                        PageRouteBuilder(
+                          pageBuilder: (_, __, ___) => const CalendarScreen(),
+                          transitionDuration: Duration.zero,
+                        )
+                      );
+                    },
+                    child: Container(
+                      margin: const EdgeInsets.symmetric(vertical: 20),
+                      padding: const EdgeInsets.all(20),
+                      width: MediaQuery.of(context).size.width / 2 - 50,
+                      decoration: BoxDecoration(
+                        color: Colors.grey[200],
+                        borderRadius: BorderRadius.circular(10),
+                      ),
+                      child: const Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Text(
+                            'Meeting: 8',
+                            style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
+                          ),
+                          Text(
+                            'Task: 3',
+                            style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
+                          ),
+                        ],
+                      ),
                     ),
                   ),
                 ],
@@ -209,22 +233,69 @@ class EditProfilePage extends StatefulWidget {
 }
 
 class _EditProfilePageState extends State<EditProfilePage> {
+  final ImagePicker _picker = ImagePicker();
   TextEditingController nameController = TextEditingController();
   TextEditingController usernameController = TextEditingController();
   TextEditingController passwordController = TextEditingController();
   String profileImageUrl = "assets/profile_image.png";
   String newPassword = "";
-  
 
-  Future<void> _selectImage() async {
-    final pickedFile = await ImagePicker().pickImage(source: ImageSource.gallery);
+  Future<void> _getImageFromGallery() async {
+  final pickedFile = await _picker.pickImage(source: ImageSource.gallery);
 
-    if (pickedFile != null) {
-      setState(() {
-        profileImageUrl = pickedFile.path;
-      });
-    }
+  if (pickedFile != null) {
+    setState(() {
+      profileImageUrl = pickedFile.path;
+    });
   }
+}
+
+Future<void> _getImageFromCamera() async {
+  final pickedFile = await _picker.pickImage(source: ImageSource.camera);
+
+  if (pickedFile != null) {
+    setState(() {
+      profileImageUrl = pickedFile.path;
+    });
+  }
+}
+
+Future<void> _selectImage() async {
+  await _showImageSourceDialog();
+}
+
+Future<void> _showImageSourceDialog() async {
+  await showDialog(
+    context: context,
+    builder: (BuildContext context) {
+      return AlertDialog(
+        title: Text("Pilih Sumber Gambar"),
+        content: SingleChildScrollView(
+          child: ListBody(
+            children: [
+              GestureDetector(
+                onTap: () {
+                  Navigator.pop(context);
+                  _getImageFromGallery();
+                },
+                child: Text("Galeri"),
+              ),
+              const SizedBox(height: 20),
+              GestureDetector(
+                onTap: () {
+                  Navigator.pop(context);
+                  _getImageFromCamera();
+                },
+                child: Text("Kamera"),
+              ),
+            ],
+          ),
+        ),
+      );
+    },
+  );
+}
+
   @override
   void initState() {
     super.initState();
@@ -243,7 +314,7 @@ class _EditProfilePageState extends State<EditProfilePage> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: Text('Edit Profile'),
+        title: const Text('Edit Profile'),
       ),
       body: Padding(
         padding: const EdgeInsets.symmetric(horizontal: 16.0),
@@ -263,37 +334,37 @@ class _EditProfilePageState extends State<EditProfilePage> {
                     bottom: 0,
                     right: 0,
                     child: Container(
-                      decoration: BoxDecoration(
+                      decoration: const BoxDecoration(
                         shape: BoxShape.circle,
                         color: Colors.white,
                       ),
-                      padding: EdgeInsets.all(4),
-                      child: Icon(Icons.edit),
+                      padding: const EdgeInsets.all(4),
+                      child: const Icon(Icons.edit),
                     ),
                   ),
                 ],
               ),
             ),
-            SizedBox(height: 20),
+            const SizedBox(height: 20),
             TextFormField(
               controller: nameController,
-              decoration: InputDecoration(labelText: 'Name'),
+              decoration: const InputDecoration(labelText: 'Name'),
             ),
-            SizedBox(height: 10),
+            const SizedBox(height: 10),
             TextFormField(
               controller: usernameController,
-              decoration: InputDecoration(labelText: 'Username'),
+              decoration: const InputDecoration(labelText: 'Username'),
             ),
-            SizedBox(height: 10),
+            const SizedBox(height: 10),
             TextFormField(
               controller: passwordController,
-              decoration: InputDecoration(labelText: 'New Password'),
+              decoration: const InputDecoration(labelText: 'New Password'),
               obscureText: true,
               onChanged: (value) {
                 newPassword = value;
               },
             ),
-            SizedBox(height: 20),
+            const SizedBox(height: 20),
             Center(
               child: ElevatedButton(
                 onPressed: () {
@@ -303,7 +374,15 @@ class _EditProfilePageState extends State<EditProfilePage> {
                     'profileImageUrl': profileImageUrl,
                   });
                 },
-                child: Text('Save'),
+                style: ElevatedButton.styleFrom(
+                  backgroundColor: GlobalColors.secondColor,
+                ),
+                child: Text(
+                  'Save',
+                  style: TextStyle(
+                    color: Colors.white,
+                  ),
+                ),
               ),
             ),
           ],
