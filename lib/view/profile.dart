@@ -1,10 +1,10 @@
 import 'dart:io';
 
 import 'package:flutter/material.dart';
+import 'package:image_picker/image_picker.dart';
 import 'package:login_sahabat_mahasiswa/settings/setting.dart';
 import 'package:login_sahabat_mahasiswa/utils/colors.dart';
 import 'package:login_sahabat_mahasiswa/view/widget/bottom.navigationbar.dart';
-
 
 void main() {
   runApp(ProfileApp());
@@ -41,56 +41,168 @@ class _ProfilePageState extends State<ProfilePage> {
       appBar: AppBar(
         backgroundColor: GlobalColors.mainColor,
         automaticallyImplyLeading: false,
-        title: Text('Profile', style: TextStyle(color: Colors.white),),
+        title: Text(
+          'Profile',
+          style: TextStyle(color: Colors.white),
+        ),
+        actions: [
+          Padding(
+            padding: EdgeInsets.only(right: 8.0),
+            child: IconButton(
+              color: Colors.white,
+              icon: Icon(Icons.settings),
+              onPressed: () {
+                Navigator.pushReplacement(
+                  context,
+                  PageRouteBuilder(
+                    pageBuilder: (_, __, ___) => Setting(),
+                    transitionDuration: Duration.zero,
+                  ),
+                );
+              },
+            ),
+          )
+        ],
       ),
       body: Center(
         child: Padding(
           padding: const EdgeInsets.symmetric(horizontal: 16.0),
           child: Column(
-            children: <Widget>[SizedBox(height: 50),
-              CircleAvatar(
-                radius: 50,
-                backgroundImage: FileImage(File(profileImageUrl)),
-              ),
-              SizedBox(height: 20),
+            children: <Widget>[
               Text(
-                'Name: $name',
+                username,
                 style: TextStyle(fontSize: 20),
               ),
-              SizedBox(height: 10),
-              Text(
-                'Username: $username',
-                style: TextStyle(fontSize: 20),
-              ),
-              SizedBox(height: 20),
-              ElevatedButton(
-                onPressed: () async {
-                  var result = await Navigator.pushNamed(context, '/edit', arguments: {
-                    'name': name,
-                    'username': username,
-                    'profileImageUrl': profileImageUrl,
-                  });
-                  if (result != null && result is Map<String, String>) {
-                    setState(() {
-                      name = result['name']!;
-                      username = result['username']!;
-                      profileImageUrl = result['profileImageUrl']!;
-                    });
-                  }
-                },
-                child: Text('Edit Profile'),
-              ),
-              ElevatedButton(
-                onPressed: () {
-                  Navigator.pushReplacement(
-                  context,
-                  PageRouteBuilder(
-                  pageBuilder: (_, __, ___) => Setting(),
-                  transitionDuration: Duration.zero, 
+              Container(
+                padding: EdgeInsets.all(1),
+                width: 100,
+                decoration: BoxDecoration(
+                  color: const Color.fromARGB(255, 0, 0, 0),
                 ),
-                );
-                },
-                child: Text('Settings'),
+              ),
+              SizedBox(height: 20),
+              GestureDetector(
+                child: Stack(
+                  children: [
+                    CircleAvatar(
+                      radius: 50,
+                      backgroundColor: const Color.fromARGB(255, 71, 76, 80),
+                      backgroundImage: FileImage(File(profileImageUrl)),
+                    ),
+                    Positioned(
+                      bottom: 0,
+                      right: 0,
+                      child: Container(
+                        decoration: BoxDecoration(
+                          shape: BoxShape.circle,
+                          color: Colors.white,
+                        ),
+                        padding: EdgeInsets.all(4),
+                        child: GestureDetector(
+                          onTap: () async {
+                            var result = await Navigator.pushNamed(
+                                context, '/edit',
+                                arguments: {
+                                  'name': name,
+                                  'username': username,
+                                  'profileImageUrl': profileImageUrl,
+                                });
+                            if (result != null &&
+                                result is Map<String, String>) {
+                              setState(() {
+                                name = result['name']!;
+                                username = result['username']!;
+                                profileImageUrl = result['profileImageUrl']!;
+                              });
+                            }
+                          },
+                          child: Icon(Icons.edit),
+                        ),
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+              SizedBox(height: 20),
+              Row(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Expanded(
+                    child: Text(
+                      name,
+                      textAlign: TextAlign.center,
+                      style: TextStyle(fontSize: 20),
+                    ),
+                  ),
+                  SizedBox(width: 4),
+                ],
+              ),
+              Container(
+                margin: EdgeInsets.symmetric(vertical: 20),
+                padding: EdgeInsets.all(1),
+                decoration: BoxDecoration(
+                  color: const Color.fromARGB(255, 0, 0, 0),
+                  borderRadius: BorderRadius.circular(10),
+                ),
+              ),
+              SizedBox(
+                height: 5,
+              ),
+              Row(
+                mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                children: [
+                  Container(
+                    margin: EdgeInsets.symmetric(vertical: 20),
+                    padding: EdgeInsets.all(20),
+                    width: MediaQuery.of(context).size.width / 2 - 10,
+                    decoration: BoxDecoration(
+                      color: Colors.grey[200],
+                      borderRadius: BorderRadius.circular(10),
+                    ),
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Text(
+                          'Tugas dekat deadline!',
+                          style: TextStyle(
+                              fontSize: 16,
+                              fontWeight: FontWeight.bold,
+                              color: Colors.red),
+                        ),
+                        Text(
+                          '  -2',
+                          style: TextStyle(
+                              fontSize: 16, fontWeight: FontWeight.bold),
+                        ),
+                        // Tambahkan info lainnya di sini
+                      ],
+                    ),
+                  ),
+                  Container(
+                    margin: EdgeInsets.symmetric(vertical: 20),
+                    padding: EdgeInsets.all(20),
+                    width: MediaQuery.of(context).size.width / 2 - 50,
+                    decoration: BoxDecoration(
+                      color: Colors.grey[200],
+                      borderRadius: BorderRadius.circular(10),
+                    ),
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Text(
+                          'Meeting: 8',
+                          style: TextStyle(
+                              fontSize: 16, fontWeight: FontWeight.bold),
+                        ),
+                        Text(
+                          'Project Besar: 3',
+                          style: TextStyle(
+                              fontSize: 16, fontWeight: FontWeight.bold),
+                        ),
+                      ],
+                    ),
+                  ),
+                ],
               ),
             ],
           ),
@@ -112,11 +224,23 @@ class _EditProfilePageState extends State<EditProfilePage> {
   String profileImageUrl = "assets/profile_image.png";
   String newPassword = "";
 
+  Future<void> _selectImage() async {
+    final pickedFile =
+        await ImagePicker().pickImage(source: ImageSource.gallery);
+
+    if (pickedFile != null) {
+      setState(() {
+        profileImageUrl = pickedFile.path;
+      });
+    }
+  }
+
   @override
   void initState() {
     super.initState();
-    WidgetsBinding.instance.addPostFrameCallback((_) {
-      final Map<String, String>? args = ModalRoute.of(context)!.settings.arguments as Map<String, String>?;
+    WidgetsBinding.instance!.addPostFrameCallback((_) {
+      final Map<String, String>? args =
+          ModalRoute.of(context)!.settings.arguments as Map<String, String>?;
       if (args != null) {
         nameController.text = args['name']!;
         usernameController.text = args['username']!;
@@ -136,11 +260,30 @@ class _EditProfilePageState extends State<EditProfilePage> {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.center,
           children: <Widget>[
-            CircleAvatar(
-              radius: 50,
-              backgroundImage: AssetImage(profileImageUrl),
+            GestureDetector(
+              onTap: _selectImage,
+              child: Stack(
+                children: [
+                  CircleAvatar(
+                    radius: 50,
+                    backgroundColor: const Color.fromARGB(255, 71, 76, 80),
+                    backgroundImage: FileImage(File(profileImageUrl)),
+                  ),
+                  Positioned(
+                    bottom: 0,
+                    right: 0,
+                    child: Container(
+                      decoration: BoxDecoration(
+                        shape: BoxShape.circle,
+                        color: Colors.white,
+                      ),
+                      padding: EdgeInsets.all(4),
+                      child: Icon(Icons.edit),
+                    ),
+                  ),
+                ],
+              ),
             ),
-            SizedBox(height: 10),
             SizedBox(height: 20),
             TextFormField(
               controller: nameController,
@@ -164,7 +307,6 @@ class _EditProfilePageState extends State<EditProfilePage> {
             Center(
               child: ElevatedButton(
                 onPressed: () {
-                  // Simpan perubahan profil ke server atau lokal database
                   Navigator.pop(context, {
                     'name': nameController.text,
                     'username': usernameController.text,
