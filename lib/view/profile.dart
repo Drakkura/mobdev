@@ -34,6 +34,7 @@ class _ProfilePageState extends State<ProfilePage> {
   String username = "Tobanga";
   String profileImageUrl = "assets/images/logoaja.png";
 
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -49,7 +50,7 @@ class _ProfilePageState extends State<ProfilePage> {
           Padding(
             padding: EdgeInsets.only(right: 8.0),
             child: IconButton(
-              color: Colors.white,
+              color: Colors.white, 
               icon: Icon(Icons.settings),
               onPressed: () {
                 Navigator.pushReplacement(
@@ -69,16 +70,17 @@ class _ProfilePageState extends State<ProfilePage> {
           padding: const EdgeInsets.symmetric(horizontal: 16.0),
           child: Column(
             children: <Widget>[
+              SizedBox(height: 25,),
               Text(
                 username,
                 style: TextStyle(fontSize: 20),
               ),
               Container(
-                padding: EdgeInsets.all(1),
-                width: 100,
-                decoration: BoxDecoration(
-                  color: const Color.fromARGB(255, 0, 0, 0),
-                ),
+                    padding: EdgeInsets.all(1),
+                    width: 100,
+                    decoration: BoxDecoration(
+                      color: const Color.fromARGB(255, 0, 0, 0),
+                ),  
               ),
               SizedBox(height: 20),
               GestureDetector(
@@ -100,15 +102,12 @@ class _ProfilePageState extends State<ProfilePage> {
                         padding: EdgeInsets.all(4),
                         child: GestureDetector(
                           onTap: () async {
-                            var result = await Navigator.pushNamed(
-                                context, '/edit',
-                                arguments: {
-                                  'name': name,
-                                  'username': username,
-                                  'profileImageUrl': profileImageUrl,
-                                });
-                            if (result != null &&
-                                result is Map<String, String>) {
+                            var result = await Navigator.pushNamed(context, '/edit', arguments: {
+                              'name': name,
+                              'username': username,
+                              'profileImageUrl': profileImageUrl,
+                            });
+                            if (result != null && result is Map<String, String>) {
                               setState(() {
                                 name = result['name']!;
                                 username = result['username']!;
@@ -123,8 +122,9 @@ class _ProfilePageState extends State<ProfilePage> {
                   ],
                 ),
               ),
+
               SizedBox(height: 20),
-              Row(
+             Row(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   Expanded(
@@ -134,27 +134,25 @@ class _ProfilePageState extends State<ProfilePage> {
                       style: TextStyle(fontSize: 20),
                     ),
                   ),
-                  SizedBox(width: 4),
+                  SizedBox(width: 4), 
+                  
                 ],
               ),
-              Container(
-                margin: EdgeInsets.symmetric(vertical: 20),
-                padding: EdgeInsets.all(1),
-                decoration: BoxDecoration(
-                  color: const Color.fromARGB(255, 0, 0, 0),
-                  borderRadius: BorderRadius.circular(10),
-                ),
+              Container(margin: EdgeInsets.symmetric(vertical: 20),
+                    padding: EdgeInsets.all(1),
+                    decoration: BoxDecoration(
+                      color: const Color.fromARGB(255, 0, 0, 0),
+                      borderRadius: BorderRadius.circular(10),
+                ),  
               ),
-              SizedBox(
-                height: 5,
-              ),
+              SizedBox(height: 5,),
               Row(
                 mainAxisAlignment: MainAxisAlignment.spaceEvenly,
                 children: [
                   Container(
                     margin: EdgeInsets.symmetric(vertical: 20),
                     padding: EdgeInsets.all(20),
-                    width: MediaQuery.of(context).size.width / 2 - 10,
+                    width: MediaQuery.of(context).size.width / 2 - 10, 
                     decoration: BoxDecoration(
                       color: Colors.grey[200],
                       borderRadius: BorderRadius.circular(10),
@@ -162,19 +160,14 @@ class _ProfilePageState extends State<ProfilePage> {
                     child: Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
-                        Text(
+                       Text(
                           'Tugas dekat deadline!',
-                          style: TextStyle(
-                              fontSize: 16,
-                              fontWeight: FontWeight.bold,
-                              color: Colors.red),
+                          style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold, color: Colors.red),
                         ),
                         Text(
                           '  -2',
-                          style: TextStyle(
-                              fontSize: 16, fontWeight: FontWeight.bold),
+                          style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
                         ),
-                        // Tambahkan info lainnya di sini
                       ],
                     ),
                   ),
@@ -191,13 +184,11 @@ class _ProfilePageState extends State<ProfilePage> {
                       children: [
                         Text(
                           'Meeting: 8',
-                          style: TextStyle(
-                              fontSize: 16, fontWeight: FontWeight.bold),
+                          style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
                         ),
                         Text(
                           'Project Besar: 3',
-                          style: TextStyle(
-                              fontSize: 16, fontWeight: FontWeight.bold),
+                          style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
                         ),
                       ],
                     ),
@@ -223,10 +214,10 @@ class _EditProfilePageState extends State<EditProfilePage> {
   TextEditingController passwordController = TextEditingController();
   String profileImageUrl = "assets/profile_image.png";
   String newPassword = "";
+  
 
   Future<void> _selectImage() async {
-    final pickedFile =
-        await ImagePicker().pickImage(source: ImageSource.gallery);
+    final pickedFile = await ImagePicker().pickImage(source: ImageSource.gallery);
 
     if (pickedFile != null) {
       setState(() {
@@ -234,7 +225,6 @@ class _EditProfilePageState extends State<EditProfilePage> {
       });
     }
   }
-
   @override
   void initState() {
     super.initState();
