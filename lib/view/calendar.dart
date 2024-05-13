@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:table_calendar/table_calendar.dart';
+import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:login_sahabat_mahasiswa/view/dashboard.dart';
 import 'package:login_sahabat_mahasiswa/view/widget/bottom.navigationbar.dart';
 import 'package:login_sahabat_mahasiswa/utils/colors.dart';
 
@@ -14,16 +16,65 @@ class _CalendarScreenState extends State<CalendarScreen> {
   CalendarFormat _calendarFormat = CalendarFormat.month;
   DateTime _focusedDay = DateTime.now();
   DateTime? _selectedDay;
+  List<Task> _tasks = [];
+  List<Task> _visibleTasks = [];
+  int _visibleCount = 3; // Number of tasks to show initially
 
-  List<List<String>> _tasks = [
-    ['Task 1', 'Task 2', 'Task 3'],
-    ['Task 4', 'Task 5', 'Task 6'],
-  ];
+  FirebaseFirestore _firestore = FirebaseFirestore.instance;
 
-  int _currentPageIndex = 0;
+  @override
+  void initState() {
+    super.initState();
+    _fetchTasks();
+  }
+
+  Future<void> _fetchTasks() async {
+    var querySnapshot = await _firestore.collection('tasks').get();
+    var fetchedTasks = querySnapshot.docs.map((doc) {
+      var data = doc.data() as Map<String, dynamic>;
+      return Task(
+        doc.id,
+        data['name'],
+        (data['date'] as Timestamp).toDate(),
+        TimeOfDay(
+            hour: int.parse(data['time'].split(':')[0]),
+            minute: int.parse(data['time'].split(':')[1])),
+        data['category'],
+      );
+    }).toList();
+
+    setState(() {
+      _tasks = fetchedTasks;
+    });
+  }
+
+  void _updateVisibleTasks() {
+    var tasksForSelectedDate = _getTasksForSelectedDate();
+    _visibleTasks = tasksForSelectedDate.take(_visibleCount).toList();
+  }
+
+  List<Task> _getTasksForSelectedDate() {
+    return _tasks.where((task) {
+      return task.date.year == _selectedDay?.year &&
+          task.date.month == _selectedDay?.month &&
+          task.date.day == _selectedDay?.day;
+    }).toList();
+  }
+
+  void _loadMoreTasks() {
+    var allTasks = _getTasksForSelectedDate();
+    if (_visibleCount < allTasks.length) {
+      setState(() {
+        _visibleCount = _visibleCount + 3; // Load 3 more tasks at a time
+        _updateVisibleTasks();
+      });
+    }
+  }
 
   @override
   Widget build(BuildContext context) {
+    _updateVisibleTasks(); // Update visible tasks whenever the state updates
+
     return Scaffold(
       appBar: AppBar(
         backgroundColor: GlobalColors.mainColor,
@@ -35,7 +86,6 @@ class _CalendarScreenState extends State<CalendarScreen> {
       ),
       body: Column(
         children: [
-          // Container for the calendar
           Container(
             color: Colors.white,
             child: TableCalendar(
@@ -50,6 +100,9 @@ class _CalendarScreenState extends State<CalendarScreen> {
                 setState(() {
                   _selectedDay = selectedDay;
                   _focusedDay = focusedDay;
+                  _visibleCount =
+                      3; // Reset visible count on new date selection
+                  _updateVisibleTasks();
                 });
               },
               onFormatChanged: (format) {
@@ -64,72 +117,25 @@ class _CalendarScreenState extends State<CalendarScreen> {
               },
             ),
           ),
-          // Container for the task list
-          Container(
-            margin: EdgeInsets.symmetric(vertical: 20, horizontal: 10),
-            padding: EdgeInsets.only(left: 16, right: 16),
-            width: 400,
-            height: 325,
-            decoration: BoxDecoration(
-              color: Colors.white,
-              borderRadius: BorderRadius.circular(15),
-              boxShadow: [
-                BoxShadow(
-                  color: Colors.grey.withOpacity(0.5),
-                  spreadRadius: 2,
-                  blurRadius: 5,
-                  offset: Offset(0, 3),
-                ),
-              ],
-            ),
-            child: Column(
-              children: [
-                const SizedBox(height: 16),
-                Text(
-                  'Task List',
-                  style: TextStyle(
-                    fontSize: 20,
-                    fontWeight: FontWeight.bold,
-                  ),
-                ),
-                SizedBox(height: 10),
-                Expanded(
-                  child: ListView.builder(
-                    itemCount: _tasks[_currentPageIndex].length,
-                    itemBuilder: (context, index) {
-                      return ListTile(
-                        title: Text(_tasks[_currentPageIndex][index]),
-                      );
-                    },
-                  ),
-                ),
-                Row(
-                  mainAxisAlignment: MainAxisAlignment.center,
-                  children: [
-                    IconButton(
-                      onPressed: () {
-                        if (_currentPageIndex > 0) {
-                          setState(() {
-                            _currentPageIndex--;
-                          });
-                        }
-                      },
-                      icon: Icon(Icons.arrow_back),
-                    ),
-                    Text('${_currentPageIndex + 1}/${_tasks.length}'),
-                    IconButton(
-                      onPressed: () {
-                        if (_currentPageIndex < _tasks.length - 1) {
-                          setState(() {
-                            _currentPageIndex++;
-                          });
-                        }
-                      },
-                      icon: Icon(Icons.arrow_forward),
-                    ),
-                  ],
-                ),
-              ],
+          Expanded(
+            child: ListView.builder(
+              itemCount: _visibleTasks.length +
+                  1, // Adding one for the load more button
+              itemBuilder: (context, index) {
+                if (index == _visibleTasks.length) {
+                  return _visibleTasks.length <
+                          _getTasksForSelectedDate().length
+                      ? ElevatedButton(
+                          onPressed: _loadMoreTasks, child: Text("Load More"))
+                      : SizedBox
+                          .shrink(); // Show button only if there are more items to load
+                }
+                Task task = _visibleTasks[index];
+                return ListTile(
+                  title: Text(task.name),
+                  subtitle: Text('${task.date} - ${task.time.format(context)}'),
+                );
+              },
             ),
           ),
         ],
