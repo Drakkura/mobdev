@@ -31,6 +31,7 @@ class _DashboardState extends State<Dashboard> {
   DateTime? selectedDate;
   TimeOfDay? selectedTime;
   String? name; // Declare name variable here
+  Task? currentTask; // To hold the task being edited
 
   final FirebaseFirestore _firestore = FirebaseFirestore.instance;
   List<Task> tasks = [];
@@ -48,7 +49,7 @@ class _DashboardState extends State<Dashboard> {
       tasks.add(Task(
         doc.id,
         data['name'],
-        (data['date'] as Timestamp).toDate(), // Convert Timestamp to DateTime
+        (data['date'] as Timestamp).toDate(),
         TimeOfDay(
             hour: int.parse(data['time'].split(':')[0]),
             minute: int.parse(data['time'].split(':')[1])),
@@ -58,100 +59,73 @@ class _DashboardState extends State<Dashboard> {
     setState(() {});
   }
 
-  Future<void> _addTask(
-      String? name, DateTime? date, TimeOfDay? time, String category) async {
-    try {
+  Future<void> _addOrEditTask(Task? task) async {
+    if (task == null) {
+      // Add new task
       await _firestore.collection('tasks').add({
         'name': name ?? '',
-        'date': date ?? DateTime.now(),
-        'time': time != null ? '${time.hour}:${time.minute}' : '00:00',
-        'category': category,
+        'date': selectedDate ?? DateTime.now(),
+        'time': selectedTime != null
+            ? '${selectedTime!.hour}:${selectedTime!.minute}'
+            : '00:00',
+        'category': selectedCategory,
       });
-
-      // Reset text field controllers
-      nameController.clear();
-      dateController.clear();
-      timeController.clear();
-      setState(() {
-        selectedCategory = predefinedCategories[0]; // Reset selected category
+    } else {
+      // Update existing task
+      await _firestore.collection('tasks').doc(task.id).update({
+        'name': name ?? task.name,
+        'date': selectedDate ?? task.date,
+        'time': selectedTime != null
+            ? '${selectedTime!.hour}:${selectedTime!.minute}'
+            : '${task.time.hour}:${task.time.minute}',
+        'category': selectedCategory,
       });
-
-      Navigator.pop(context); // Close the bottom sheet after adding task
-    } catch (e) {
-      print('Error adding task: $e');
-      // Handle error here
     }
+    _resetForm();
+    Navigator.pop(
+        context); // Close the bottom sheet after adding or editing task
   }
 
-  Future<void> _selectDate(BuildContext context) async {
-    final DateTime? pickedDate =
-        await DateTimePicker.selectDate(context, selectedDate);
-    if (pickedDate != null && pickedDate != selectedDate) {
-      setState(() {
-        selectedDate = pickedDate;
-        dateController.text =
-            "${selectedDate!.day}/${selectedDate!.month}/${selectedDate!.year}";
-      });
-    }
-  }
-
-  Future<void> _selectTime(BuildContext context) async {
-    final TimeOfDay? pickedTime =
-        await DateTimePicker.selectTime(context, selectedTime);
-    if (pickedTime != null && pickedTime != selectedTime) {
-      setState(() {
-        selectedTime = pickedTime;
-        timeController.text = "${selectedTime!.hour}:${selectedTime!.minute}";
-      });
-    }
+  void _resetForm() {
+    nameController.clear();
+    dateController.clear();
+    timeController.clear();
+    selectedCategory = predefinedCategories[0];
+    currentTask = null;
+    setState(() {});
   }
 
   Future<void> _deleteTask(String id) async {
-    try {
-      // Show confirmation dialog
-      bool confirmDelete = await showDialog(
-        context: context,
-        builder: (BuildContext context) {
-          return AlertDialog(
-            title: Text('Confirmation'),
-            content: Text('Are you sure you want to delete this task?'),
-            actions: <Widget>[
-              TextButton(
-                onPressed: () {
-                  Navigator.of(context).pop(false); // Return false if canceled
-                },
-                child: Text('Cancel'),
-              ),
-              TextButton(
-                onPressed: () {
-                  Navigator.of(context).pop(true); // Return true if confirmed
-                },
-                child: Text('Delete'),
-              ),
-            ],
-          );
-        },
-      );
+    bool confirmDelete = await showDialog(
+      context: context,
+      builder: (BuildContext context) {
+        return AlertDialog(
+          title: Text('Confirmation'),
+          content: Text('Are you sure you want to delete this task?'),
+          actions: <Widget>[
+            TextButton(
+              onPressed: () => Navigator.of(context).pop(false),
+              child: Text('Cancel'),
+            ),
+            TextButton(
+              onPressed: () => Navigator.of(context).pop(true),
+              child: Text('Delete'),
+            ),
+          ],
+        );
+      },
+    );
 
-      // Delete task if confirmed
-      if (confirmDelete == true) {
-        await _firestore.collection('tasks').doc(id).delete();
-        ScaffoldMessenger.of(context).showSnackBar(SnackBar(
-          content: Text('Task deleted successfully'),
-        ));
-      }
-    } catch (e) {
-      print('Error deleting task: $e');
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text('Failed to delete task')),
-      );
+    if (confirmDelete == true) {
+      await _firestore.collection('tasks').doc(id).delete();
+      ScaffoldMessenger.of(context).showSnackBar(SnackBar(
+        content: Text('Task deleted successfully'),
+      ));
     }
   }
 
   @override
   Widget build(BuildContext context) {
-    const String welcomeText = 'Halo Yoga';
-    const String taskText = '3 Tugas Mendatang';
     return Scaffold(
       appBar: AppBar(
         backgroundColor: GlobalColors.mainColor,
@@ -160,7 +134,7 @@ class _DashboardState extends State<Dashboard> {
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             Text(
-              welcomeText,
+              'Halo Yoga',
               style: TextStyle(
                 fontSize: 18.0,
                 fontWeight: FontWeight.bold,
@@ -168,7 +142,7 @@ class _DashboardState extends State<Dashboard> {
               ),
             ),
             Text(
-              taskText,
+              '3 Tugas Mendatang',
               style: TextStyle(
                 fontSize: 14.0,
                 color: Colors.white,
@@ -297,7 +271,6 @@ class _DashboardState extends State<Dashboard> {
                 fontWeight: FontWeight.bold,
               ),
             ),
-            const SizedBox(height: 16),
             Expanded(
               child: StreamBuilder<QuerySnapshot>(
                 stream: _firestore.collection('tasks').snapshots(),
@@ -312,7 +285,6 @@ class _DashboardState extends State<Dashboard> {
 
                   List<Task> tasks = snapshot.data!.docs.map((doc) {
                     var data = doc.data() as Map<String, dynamic>;
-                    var id = doc.id; // Capture the Firestore document ID
                     return Task(
                       doc.id,
                       data['name'],
@@ -337,8 +309,6 @@ class _DashboardState extends State<Dashboard> {
                           boxShadow: [
                             BoxShadow(
                               color: Colors.grey.withOpacity(0.5),
-                              spreadRadius: 5,
-                              blurRadius: 7,
                               offset: Offset(0, 3),
                             ),
                           ],
@@ -356,9 +326,29 @@ class _DashboardState extends State<Dashboard> {
                               ),
                             ),
                             IconButton(
+                              icon: Icon(Icons.edit, color: Colors.blue),
+                              onPressed: () {
+                                currentTask = task;
+                                nameController.text = task.name;
+                                dateController.text =
+                                    '${task.date.day}/${task.date.month}/${task.date.year}';
+                                timeController.text =
+                                    '${task.time.hour}:${task.time.minute}';
+                                selectedCategory = task.category;
+                                selectedDate = task.date;
+                                selectedTime = task.time;
+                                showModalBottomSheet(
+                                  context: context,
+                                  isScrollControlled: true,
+                                  builder: (BuildContext context) {
+                                    return _buildBottomSheet();
+                                  },
+                                );
+                              },
+                            ),
+                            IconButton(
                               icon: Icon(Icons.delete, color: Colors.red),
-                              onPressed: () =>
-                                  _deleteTask(task.id), // Call delete function
+                              onPressed: () => _deleteTask(task.id),
                             ),
                           ],
                         ),
@@ -378,76 +368,7 @@ class _DashboardState extends State<Dashboard> {
             context: context,
             isScrollControlled: true,
             builder: (BuildContext context) {
-              return SingleChildScrollView(
-                child: Center(
-                  child: Container(
-                    padding: const EdgeInsets.all(16.0),
-                    child: Column(
-                      mainAxisSize: MainAxisSize.min,
-                      children: <Widget>[
-                        TextField(
-                          decoration: const InputDecoration(
-                            labelText: 'Nama',
-                            border: OutlineInputBorder(),
-                          ),
-                          controller: nameController,
-                          onChanged: (value) => name = value,
-                        ),
-                        const SizedBox(height: 16),
-                        TextField(
-                          readOnly: true,
-                          controller: dateController,
-                          onTap: () => _selectDate(context),
-                          decoration: const InputDecoration(
-                            labelText: 'Tanggal',
-                            border: OutlineInputBorder(),
-                            suffixIcon: Icon(Icons.calendar_today),
-                          ),
-                        ),
-                        const SizedBox(height: 16),
-                        TextField(
-                          readOnly: true,
-                          controller: timeController,
-                          onTap: () => _selectTime(context),
-                          decoration: const InputDecoration(
-                            labelText: 'Jam',
-                            border: OutlineInputBorder(),
-                            suffixIcon: Icon(Icons.access_time),
-                          ),
-                        ),
-                        const SizedBox(height: 16),
-                        DropdownButtonFormField<String>(
-                          value: selectedCategory,
-                          onChanged: (String? newValue) {
-                            setState(() {
-                              selectedCategory = newValue!;
-                            });
-                          },
-                          items: predefinedCategories.map((String category) {
-                            return DropdownMenuItem<String>(
-                              value: category,
-                              child: Text(category),
-                            );
-                          }).toList(),
-                          decoration: const InputDecoration(
-                            labelText: 'Category',
-                            border: OutlineInputBorder(),
-                          ),
-                        ),
-                        const SizedBox(height: 16),
-                        ElevatedButton(
-                          onPressed: () {
-                            // Add task to Firestore
-                            _addTask(name, selectedDate, selectedTime,
-                                selectedCategory);
-                          },
-                          child: const Text('Add Task'),
-                        ),
-                      ],
-                    ),
-                  ),
-                ),
-              );
+              return _buildBottomSheet();
             },
           );
         },
@@ -455,95 +376,96 @@ class _DashboardState extends State<Dashboard> {
       ),
     );
   }
-}
 
-class ScheduleItem extends StatelessWidget {
-  final String text;
-
-  const ScheduleItem({Key? key, required this.text}) : super(key: key);
-
-  @override
-  Widget build(BuildContext context) {
-    return Container(
-      margin: const EdgeInsets.symmetric(vertical: 8.0),
-      padding: const EdgeInsets.all(8.0),
-      decoration: BoxDecoration(
-        borderRadius: BorderRadius.circular(20),
-        color: Colors.grey.withOpacity(0.2),
-      ),
-      child: Row(
-        children: [
-          GestureDetector(
-            onTap: () {},
-            child: Container(
-              width: 30,
-              height: 30,
-              decoration: BoxDecoration(
-                shape: BoxShape.circle,
-                border: Border.all(
-                  color: Colors.black,
-                  width: 2.0,
+  Widget _buildBottomSheet() {
+    return SingleChildScrollView(
+      child: Center(
+        child: Container(
+          padding: const EdgeInsets.all(16.0),
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: <Widget>[
+              TextField(
+                decoration: const InputDecoration(
+                  labelText: 'Nama',
+                  border: OutlineInputBorder(),
+                ),
+                controller: nameController,
+                onChanged: (value) => name = value,
+              ),
+              const SizedBox(height: 16),
+              TextField(
+                readOnly: true,
+                controller: dateController,
+                onTap: () => _selectDate(context),
+                decoration: const InputDecoration(
+                  labelText: 'Tanggal',
+                  border: OutlineInputBorder(),
+                  suffixIcon: Icon(Icons.calendar_today),
                 ),
               ),
-              child: const Icon(
-                Icons.check,
-                color: Colors.transparent,
+              const SizedBox(height: 16),
+              TextField(
+                readOnly: true,
+                controller: timeController,
+                onTap: () => _selectTime(context),
+                decoration: const InputDecoration(
+                  labelText: 'Jam',
+                  border: OutlineInputBorder(),
+                  suffixIcon: Icon(Icons.access_time),
+                ),
               ),
-            ),
+              const SizedBox(height: 16),
+              DropdownButtonFormField<String>(
+                value: selectedCategory,
+                onChanged: (String? newValue) {
+                  setState(() {
+                    selectedCategory = newValue!;
+                  });
+                },
+                items: predefinedCategories.map((String category) {
+                  return DropdownMenuItem<String>(
+                    value: category,
+                    child: Text(category),
+                  );
+                }).toList(),
+                decoration: const InputDecoration(
+                  labelText: 'Category',
+                  border: OutlineInputBorder(),
+                ),
+              ),
+              const SizedBox(height: 16),
+              ElevatedButton(
+                onPressed: () => _addOrEditTask(currentTask),
+                child: Text(currentTask == null ? 'Add Task' : 'Update Task'),
+              ),
+            ],
           ),
-          const SizedBox(width: 8.0),
-          Expanded(
-            child: Text(
-              text,
-              style: const TextStyle(fontSize: 16.0),
-            ),
-          ),
-        ],
+        ),
       ),
     );
   }
-}
 
-class CompletedItem extends StatelessWidget {
-  final String text;
+  Future<void> _selectDate(BuildContext context) async {
+    final DateTime? pickedDate =
+        await DateTimePicker.selectDate(context, selectedDate);
+    if (pickedDate != null && pickedDate != selectedDate) {
+      setState(() {
+        selectedDate = pickedDate;
+        dateController.text =
+            "${selectedDate!.day}/${selectedDate!.month}/${selectedDate!.year}";
+      });
+    }
+  }
 
-  const CompletedItem({Key? key, required this.text}) : super(key: key);
-
-  @override
-  Widget build(BuildContext context) {
-    return Container(
-      margin: const EdgeInsets.symmetric(vertical: 8.0),
-      padding: const EdgeInsets.all(8.0),
-      decoration: BoxDecoration(
-        borderRadius: BorderRadius.circular(20),
-        color: Colors.grey.withOpacity(0.2),
-      ),
-      child: Row(
-        children: [
-          Container(
-            width: 30,
-            height: 30,
-            decoration: const BoxDecoration(
-              shape: BoxShape.circle,
-              color: Colors.green,
-            ),
-            child: const Icon(
-              Icons.check,
-              color: Colors.white,
-            ),
-          ),
-          const SizedBox(width: 8.0),
-          Expanded(
-            child: Text(
-              text,
-              style: const TextStyle(
-                fontSize: 16.0,
-                decoration: TextDecoration.lineThrough,
-              ),
-            ),
-          ),
-        ],
-      ),
-    );
+  Future<void> _selectTime(BuildContext context) async {
+    final TimeOfDay? pickedTime =
+        await DateTimePicker.selectTime(context, selectedTime);
+    if (pickedTime != null && pickedTime != selectedTime) {
+      setState(() {
+        selectedTime = pickedTime;
+        timeController.text = "${selectedTime!.hour}:${selectedTime!.minute}";
+      });
+    }
   }
 }

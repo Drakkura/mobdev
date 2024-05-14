@@ -17,16 +17,12 @@ class LoginView extends StatelessWidget {
         email: emailController.text,
         password: passwordController.text,
       );
-
-      // Check if the user is signed in
       if (userCredential.user != null) {
-        // Navigate to the Dashboard page
         Navigator.pushReplacement(
           context,
           MaterialPageRoute(builder: (context) => Dashboard()),
         );
       } else {
-        // Show an error dialog
         showDialog(
           context: context,
           builder: (context) => AlertDialog(
@@ -42,7 +38,6 @@ class LoginView extends StatelessWidget {
         );
       }
     } on FirebaseAuthException catch (e) {
-      // Handle Firebase authentication errors
       showDialog(
         context: context,
         builder: (context) => AlertDialog(
@@ -57,7 +52,6 @@ class LoginView extends StatelessWidget {
         ),
       );
     } catch (e) {
-      // Handle other errors
       showDialog(
         context: context,
         builder: (context) => AlertDialog(
@@ -86,8 +80,7 @@ class LoginView extends StatelessWidget {
             width: 420,
           ),
         ),
-        title: Text(
-            ''), // Empty text to occupy the space and center the app bar title
+        title: Text(''),
         actions: [
           IconButton(
             onPressed: () {
@@ -117,12 +110,12 @@ class LoginView extends StatelessWidget {
                     ),
                   ),
                 ),
-                SizedBox(height: 10), // Jarak antara teks dan gambar
+                SizedBox(height: 10),
                 Center(
                   child: Image.asset(
                     'assets/images/Time.png',
-                    width: 250, // Sesuaikan lebar gambar sesuai kebutuhan
-                    height: 250, // Sesuaikan tinggi gambar sesuai kebutuhan
+                    width: 250,
+                    height: 250,
                   ),
                 ),
                 SizedBox(height: 20),
@@ -174,7 +167,6 @@ class LoginView extends StatelessWidget {
                 ),
                 SizedBox(height: 25),
                 Center(
-                  // Centered button text to navigate to register page
                   child: TextButton(
                     onPressed: () {
                       Navigator.push(
@@ -188,8 +180,7 @@ class LoginView extends StatelessWidget {
                         color: Colors.black,
                         fontSize: 16,
                       ),
-                      textAlign:
-                          TextAlign.center, // Center align the button text
+                      textAlign: TextAlign.center,
                     ),
                   ),
                 ),
