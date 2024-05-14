@@ -30,6 +30,7 @@ class _DashboardState extends State<Dashboard> {
   String selectedCategory = 'Kuliah';
   DateTime? selectedDate;
   TimeOfDay? selectedTime;
+<<<<<<< Updated upstream
   String? name; // Declare name variable here
 
   final FirebaseFirestore _firestore = FirebaseFirestore.instance;
@@ -41,6 +42,19 @@ class _DashboardState extends State<Dashboard> {
     _fetchTasks();
   }
 
+=======
+  String? name;
+
+  final FirebaseFirestore _firestore = FirebaseFirestore.instance;
+  List<Task> tasks = [];
+
+  @override
+  void initState() {
+    super.initState();
+    _fetchTasks();
+  }
+
+>>>>>>> Stashed changes
   Future<void> _fetchTasks() async {
     var querySnapshot = await _firestore.collection('tasks').get();
     for (var doc in querySnapshot.docs) {
@@ -48,7 +62,11 @@ class _DashboardState extends State<Dashboard> {
       tasks.add(Task(
         doc.id,
         data['name'],
+<<<<<<< Updated upstream
         (data['date'] as Timestamp).toDate(), // Convert Timestamp to DateTime
+=======
+        (data['date'] as Timestamp).toDate(),
+>>>>>>> Stashed changes
         TimeOfDay(
             hour: int.parse(data['time'].split(':')[0]),
             minute: int.parse(data['time'].split(':')[1])),
@@ -58,8 +76,7 @@ class _DashboardState extends State<Dashboard> {
     setState(() {});
   }
 
-  Future<void> _addTask(
-      String? name, DateTime? date, TimeOfDay? time, String category) async {
+  Future<void> _addTask(String? name, DateTime? date, TimeOfDay? time, String category) async {
     try {
       await _firestore.collection('tasks').add({
         'name': name ?? '',
@@ -68,36 +85,136 @@ class _DashboardState extends State<Dashboard> {
         'category': category,
       });
 
-      // Reset text field controllers
       nameController.clear();
       dateController.clear();
       timeController.clear();
       setState(() {
-        selectedCategory = predefinedCategories[0]; // Reset selected category
+        selectedCategory = predefinedCategories[0];
       });
 
-      Navigator.pop(context); // Close the bottom sheet after adding task
+      Navigator.pop(context);
     } catch (e) {
       print('Error adding task: $e');
-      // Handle error here
+    }
+  }
+
+  Future<void> _editTask(Task task) async {
+    nameController.text = task.name;
+    dateController.text = "${task.date.day}/${task.date.month}/${task.date.year}";
+    timeController.text = "${task.time.hour}:${task.time.minute}";
+    selectedCategory = task.category;
+    selectedDate = task.date;
+    selectedTime = task.time;
+
+    showModalBottomSheet(
+      context: context,
+      isScrollControlled: true,
+      builder: (BuildContext context) {
+        return SingleChildScrollView(
+          child: Center(
+            child: Container(
+              padding: const EdgeInsets.all(16.0),
+              child: Column(
+                mainAxisSize: MainAxisSize.min,
+                children: <Widget>[
+                  TextField(
+                    decoration: const InputDecoration(
+                      labelText: 'Nama',
+                      border: OutlineInputBorder(),
+                    ),
+                    controller: nameController,
+                  ),
+                  const SizedBox(height: 16),
+                  TextField(
+                    readOnly: true,
+                    controller: dateController,
+                    onTap: () => _selectDate(context),
+                    decoration: const InputDecoration(
+                      labelText: 'Tanggal',
+                      border: OutlineInputBorder(),
+                      suffixIcon: Icon(Icons.calendar_today),
+                    ),
+                  ),
+                  const SizedBox(height: 16),
+                  TextField(
+                    readOnly: true,
+                    controller: timeController,
+                    onTap: () => _selectTime(context),
+                    decoration: const InputDecoration(
+                      labelText: 'Jam',
+                      border: OutlineInputBorder(),
+                      suffixIcon: Icon(Icons.access_time),
+                    ),
+                  ),
+                  const SizedBox(height: 16),
+                  DropdownButtonFormField<String>(
+                    value: selectedCategory,
+                    onChanged: (String? newValue) {
+                      setState(() {
+                        selectedCategory = newValue!;
+                      });
+                    },
+                    items: predefinedCategories.map((String category) {
+                      return DropdownMenuItem<String>(
+                        value: category,
+                        child: Text(category),
+                      );
+                    }).toList(),
+                    decoration: const InputDecoration(
+                      labelText: 'Category',
+                      border: OutlineInputBorder(),
+                    ),
+                  ),
+                  const SizedBox(height: 16),
+                  ElevatedButton(
+                    onPressed: () {
+                      _updateTask(task.id, nameController.text, selectedDate, selectedTime, selectedCategory);
+                    },
+                    child: const Text('Save Changes'),
+                  ),
+                ],
+              ),
+            ),
+          ),
+        );
+      },
+    );
+  }
+
+  Future<void> _updateTask(String id, String? name, DateTime? date, TimeOfDay? time, String category) async {
+    try {
+      await _firestore.collection('tasks').doc(id).update({
+        'name': name ?? '',
+        'date': date ?? DateTime.now(),
+        'time': time != null ? '${time.hour}:${time.minute}' : '00:00',
+        'category': category,
+      });
+
+      nameController.clear();
+      dateController.clear();
+      timeController.clear();
+      setState(() {
+        selectedCategory = predefinedCategories[0];
+      });
+
+      Navigator.pop(context);
+    } catch (e) {
+      print('Error updating task: $e');
     }
   }
 
   Future<void> _selectDate(BuildContext context) async {
-    final DateTime? pickedDate =
-        await DateTimePicker.selectDate(context, selectedDate);
+    final DateTime? pickedDate = await DateTimePicker.selectDate(context, selectedDate);
     if (pickedDate != null && pickedDate != selectedDate) {
       setState(() {
         selectedDate = pickedDate;
-        dateController.text =
-            "${selectedDate!.day}/${selectedDate!.month}/${selectedDate!.year}";
+        dateController.text = "${selectedDate!.day}/${selectedDate!.month}/${selectedDate!.year}";
       });
     }
   }
 
   Future<void> _selectTime(BuildContext context) async {
-    final TimeOfDay? pickedTime =
-        await DateTimePicker.selectTime(context, selectedTime);
+    final TimeOfDay? pickedTime = await DateTimePicker.selectTime(context, selectedTime);
     if (pickedTime != null && pickedTime != selectedTime) {
       setState(() {
         selectedTime = pickedTime;
@@ -108,7 +225,6 @@ class _DashboardState extends State<Dashboard> {
 
   Future<void> _deleteTask(String id) async {
     try {
-      // Show confirmation dialog
       bool confirmDelete = await showDialog(
         context: context,
         builder: (BuildContext context) {
@@ -118,13 +234,13 @@ class _DashboardState extends State<Dashboard> {
             actions: <Widget>[
               TextButton(
                 onPressed: () {
-                  Navigator.of(context).pop(false); // Return false if canceled
+                  Navigator.of(context).pop(false);
                 },
                 child: Text('Cancel'),
               ),
               TextButton(
                 onPressed: () {
-                  Navigator.of(context).pop(true); // Return true if confirmed
+                  Navigator.of(context).pop(true);
                 },
                 child: Text('Delete'),
               ),
@@ -133,7 +249,6 @@ class _DashboardState extends State<Dashboard> {
         },
       );
 
-      // Delete task if confirmed
       if (confirmDelete == true) {
         await _firestore.collection('tasks').doc(id).delete();
         ScaffoldMessenger.of(context).showSnackBar(SnackBar(
@@ -156,9 +271,9 @@ class _DashboardState extends State<Dashboard> {
       appBar: AppBar(
         backgroundColor: GlobalColors.mainColor,
         automaticallyImplyLeading: false,
-        title: const Column(
+        title: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
+          children: const [
             Text(
               welcomeText,
               style: TextStyle(
@@ -189,8 +304,12 @@ class _DashboardState extends State<Dashboard> {
                 children: [
                   Expanded(
                     child: Padding(
+<<<<<<< Updated upstream
                       padding: const EdgeInsets.only(
                           right: 8.0), // Adjust the padding as needed
+=======
+                      padding: const EdgeInsets.only(right: 8.0),
+>>>>>>> Stashed changes
                       child: TextField(
                         decoration: InputDecoration(
                           hintText: 'Cari tugas Hari ini',
@@ -202,6 +321,7 @@ class _DashboardState extends State<Dashboard> {
                       ),
                     ),
                   ),
+<<<<<<< Updated upstream
                   Padding(
                     padding: const EdgeInsets.only(
                         left: 8.0), // Adjust the padding as needed
@@ -354,16 +474,74 @@ class _DashboardState extends State<Dashboard> {
                                   color: Colors.black,
                                 ),
                               ),
+=======
+                  SizedBox(
+                    height: 40,
+                    child: ElevatedButton(
+                      onPressed: () {},
+                      style: ElevatedButton.styleFrom(
+                        backgroundColor: GlobalColors.mainColor,
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(20.0),
+                        ),
+                      ),
+                      child: const Text(
+                        'Cancel',
+                        style: TextStyle(color: Colors.white),
+                      ),
+                    ),
+                  ),
+                ],
+              ),
+            ),
+            const SizedBox(height: 16.0),
+            Expanded(
+              child: ListView.builder(
+                itemCount: tasks.length,
+                itemBuilder: (context, index) {
+                  Task task = tasks[index];
+                  return Container(
+                    margin: const EdgeInsets.symmetric(vertical: 8.0),
+                    padding: const EdgeInsets.all(16.0),
+                    decoration: BoxDecoration(
+                      color: Colors.white,
+                      borderRadius: BorderRadius.circular(15.0),
+                      boxShadow: [
+                        BoxShadow(
+                          color: Colors.grey.withOpacity(0.5),
+                          spreadRadius: 5,
+                          blurRadius: 7,
+                          offset: Offset(0, 3),
+                        ),
+                      ],
+                    ),
+                    child: Row(
+                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                      children: [
+                        Expanded(
+                          child: Text(
+                            task.name,
+                            style: const TextStyle(
+                              fontSize: 16.0,
+                              color: Colors.black,
+                            ),
+                          ),
+                        ),
+                        Row(
+                          children: [
+                            IconButton(
+                              icon: const Icon(Icons.edit, color: Colors.blue),
+                              onPressed: () => _editTask(task), // Call edit function
+>>>>>>> Stashed changes
                             ),
                             IconButton(
-                              icon: Icon(Icons.delete, color: Colors.red),
-                              onPressed: () =>
-                                  _deleteTask(task.id), // Call delete function
+                              icon: const Icon(Icons.delete, color: Colors.red),
+                              onPressed: () => _deleteTask(task.id), // Call delete function
                             ),
                           ],
                         ),
-                      );
-                    },
+                      ],
+                    ),
                   );
                 },
               ),
@@ -371,7 +549,6 @@ class _DashboardState extends State<Dashboard> {
           ],
         ),
       ),
-      bottomNavigationBar: CustomBottomNavigationBar(),
       floatingActionButton: FloatingActionButton(
         onPressed: () {
           showModalBottomSheet(
@@ -391,7 +568,10 @@ class _DashboardState extends State<Dashboard> {
                             border: OutlineInputBorder(),
                           ),
                           controller: nameController,
+<<<<<<< Updated upstream
                           onChanged: (value) => name = value,
+=======
+>>>>>>> Stashed changes
                         ),
                         const SizedBox(height: 16),
                         TextField(
@@ -437,9 +617,13 @@ class _DashboardState extends State<Dashboard> {
                         const SizedBox(height: 16),
                         ElevatedButton(
                           onPressed: () {
+<<<<<<< Updated upstream
                             // Add task to Firestore
                             _addTask(name, selectedDate, selectedTime,
                                 selectedCategory);
+=======
+                            _addTask(nameController.text, selectedDate, selectedTime, selectedCategory);
+>>>>>>> Stashed changes
                           },
                           child: const Text('Add Task'),
                         ),
@@ -452,10 +636,13 @@ class _DashboardState extends State<Dashboard> {
           );
         },
         child: const Icon(Icons.add),
+        backgroundColor: GlobalColors.mainColor,
       ),
+      bottomNavigationBar: CustomBottomNavigationBar(), // Removed const and selectedIndex
     );
   }
 }
+<<<<<<< Updated upstream
 
 class ScheduleItem extends StatelessWidget {
   final String text;
@@ -547,3 +734,5 @@ class CompletedItem extends StatelessWidget {
     );
   }
 }
+=======
+>>>>>>> Stashed changes
