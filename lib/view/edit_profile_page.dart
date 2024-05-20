@@ -1,5 +1,6 @@
 import 'dart:io';
 
+import 'package:firebase_storage/firebase_storage.dart' as firebase_storage;
 import 'package:flutter/material.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:login_sahabat_mahasiswa/utils/colors.dart';
@@ -34,6 +35,29 @@ class _EditProfilePageState extends State<EditProfilePage> {
     usernameController = TextEditingController(text: widget.username);
     profileImageUrl = widget.profileImageUrl;
   }
+  Future<void> _uploadImageToFirebase(String filePath) async {
+  File file = File(filePath);
+
+  try {
+    // Unggah file ke Firebase Storage
+    firebase_storage.Reference ref = firebase_storage.FirebaseStorage.instance
+        .ref()
+        .child("profile_images")
+        // .child(widget.userId)
+        .child("profilepic.jpg"); // Ganti "profilepic.jpg" dengan nama file yang sesuai
+    await ref.putFile(file);
+
+    // Dapatkan URL gambar yang diunggah
+    String imageUrl = await ref.getDownloadURL();
+
+    // Perbarui profileImageUrl dengan URL gambar yang diunggah
+    setState(() {
+      profileImageUrl = imageUrl;
+    });
+  } catch (e) {
+    print('Error uploading image to Firebase Storage: $e');
+  }
+}
 
   Future<void> _getImageFromGallery() async {
     final pickedFile = await _picker.pickImage(source: ImageSource.gallery);
@@ -42,6 +66,9 @@ class _EditProfilePageState extends State<EditProfilePage> {
       setState(() {
         profileImageUrl = pickedFile.path;
       });
+
+      // Upload image to Firebase Storage
+      await _uploadImageToFirebase(pickedFile.path);
     }
   }
 
@@ -148,15 +175,18 @@ class _EditProfilePageState extends State<EditProfilePage> {
             const SizedBox(height: 20),
             Center(
               child: ElevatedButton(
-                onPressed: () {
-                  // Simpan perubahan
+                onPressed: () async {
+                  // Upload image to Firebase Storage
+                  await _uploadImageToFirebase(profileImageUrl);
+
+                  // Save changes
                   Map<String, String> updatedData = {
                     'name': nameController.text,
                     'username': usernameController.text,
                     'profileImageUrl': profileImageUrl,
                   };
 
-                  // Kembali ke ProfilePage dengan data yang diperbarui
+                  // Return to ProfilePage with updated data
                   Navigator.pop(context, updatedData);
                 },
                 style: ElevatedButton.styleFrom(

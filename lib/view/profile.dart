@@ -1,7 +1,8 @@
 import 'dart:io';
 
+import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
-import 'package:image_picker/image_picker.dart';
 import 'package:login_sahabat_mahasiswa/settings/setting.dart';
 import 'package:login_sahabat_mahasiswa/utils/colors.dart';
 import 'package:login_sahabat_mahasiswa/view/calendar.dart';
@@ -18,18 +19,7 @@ class ProfileApp extends StatelessWidget {
   Widget build(BuildContext context) {
     return MaterialApp(
       title: 'Profile App',
-      initialRoute: '/',
-      routes: {
-        '/': (context) => ProfilePage(),
-      },
-      onGenerateRoute: (RouteSettings settings) {
-        // Kode onGenerateRoute yang sebelumnya
-      },
-      onUnknownRoute: (RouteSettings settings) {
-        return MaterialPageRoute(
-          builder: (context) => ProfilePage(),
-        );
-      },
+      home: ProfilePage(),
     );
   }
 }
@@ -40,9 +30,35 @@ class ProfilePage extends StatefulWidget {
 }
 
 class _ProfilePageState extends State<ProfilePage> {
-  String name = "Yoga Ananta Elfaraby";
-  String username = "Tobanga";
+  late String name = "";
+  late String username = ""; // Inisialisasi dengan string kosong
   String profileImageUrl = "assets/images/logoaja.png";
+  final _db = FirebaseFirestore.instance;
+  final _auth = FirebaseAuth.instance; // Menambahkan FirebaseAuth untuk mendapatkan UID pengguna saat ini
+
+  @override
+  void initState() {
+    super.initState();
+    getUserDataFromFirestore(); // Panggil fungsi untuk mengambil data pengguna dari Firestore
+  }
+
+  Future<void> getUserDataFromFirestore() async {
+    try {
+      User? user = _auth.currentUser; // Dapatkan pengguna yang sedang login
+      if (user != null) {
+        final snapshot = await _db.collection("users").doc(user.uid).get(); // Ambil data pengguna dari Firestore menggunakan UID
+
+        if (snapshot.exists) {
+          setState(() {
+            username = snapshot.data()!['username']; // Set state dengan username yang didapatkan dari Firestore
+            name = "${snapshot.data()!['firstName']} ${snapshot.data()!['lastName']}"; // Gabungkan firstname dan lastname
+          });
+        }
+      }
+    } catch (e) {
+      print("Error getting user data: $e");
+    }
+  }
 
   @override
   Widget build(BuildContext context) {
