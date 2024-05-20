@@ -4,6 +4,9 @@ import 'package:login_sahabat_mahasiswa/utils/colors.dart';
 import 'package:login_sahabat_mahasiswa/utils/date_time.dart';
 import 'package:intl/intl.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:flutter_local_notifications/flutter_local_notifications.dart';
+import 'package:timezone/timezone.dart' as tz;
+import 'package:timezone/data/latest.dart' as tz;
 
 class Task {
   String id;
@@ -13,6 +16,49 @@ class Task {
   String category;
 
   Task(this.id, this.name, this.date, this.time, this.category);
+}
+
+
+class NotificationService {
+  static final FlutterLocalNotificationsPlugin _notificationsPlugin = FlutterLocalNotificationsPlugin();
+
+  static void initialize() {
+    tz.initializeTimeZones(); // important if you're going to use time zones
+
+    final InitializationSettings initializationSettings = InitializationSettings(
+      android: AndroidInitializationSettings('@mipmap/ic_launcher'),
+    );
+
+    _notificationsPlugin.initialize(initializationSettings);
+  }
+
+  static Future<void> showScheduledNotification({
+    required int id,
+    required String title,
+    required String body,
+    required DateTime scheduledDate,
+  }) async {
+    var androidDetails = AndroidNotificationDetails(
+      'task_id_$id',
+      'Task Reminders',
+      channelDescription: 'Channel for task reminder notifications',
+      importance: Importance.max,
+      priority: Priority.high,
+    );
+
+    var notificationDetails = NotificationDetails(android: androidDetails);
+
+    await _notificationsPlugin.zonedSchedule(
+      id,
+      title,
+      body,
+      tz.TZDateTime.from(scheduledDate, tz.local), // Convert scheduledDate to time zone-aware date
+      notificationDetails,
+      androidAllowWhileIdle: true,
+      uiLocalNotificationDateInterpretation: UILocalNotificationDateInterpretation.absoluteTime,
+      matchDateTimeComponents: DateTimeComponents.time, // This can be adjusted based on how exact the timing needs to be
+    );
+  }
 }
 
 class Dashboard extends StatefulWidget {
@@ -61,27 +107,39 @@ class _DashboardState extends State<Dashboard> {
   }
 
   Future<void> _addOrEditTask(Task? task) async {
-    if (task == null) {
-      // Add new task
-      await _firestore.collection('tasks').add({
-        'name': name ?? '',
-        'date': selectedDate ?? DateTime.now(),
-        'time': selectedTime != null
-            ? '${selectedTime!.hour}:${selectedTime!.minute}'
-            : '00:00',
-        'category': selectedCategory,
-      });
-    } else {
-      // Update existing task
-      await _firestore.collection('tasks').doc(task.id).update({
-        'name': name ?? task.name,
-        'date': selectedDate ?? task.date,
-        'time': selectedTime != null
-            ? '${selectedTime!.hour}:${selectedTime!.minute}'
-            : '${task.time.hour}:${task.time.minute}',
-        'category': selectedCategory,
-      });
-    }
+    DateTime fullDateTime = DateTime(
+      selectedDate?.year ?? DateTime.now().year,
+      selectedDate?.month ?? DateTime.now().month,
+      selectedDate?.day ?? DateTime.now().day,
+      selectedTime?.hour ?? 0,
+      selectedTime?.minute ?? 0,
+    );
+
+    var docRef = task == null
+        ? _firestore.collection('tasks').doc()
+        : _firestore.collection('tasks').doc(task.id);
+
+    await docRef.set({
+      'name': name ?? '',
+      'date': selectedDate ?? DateTime.now(),
+      'time': selectedTime != null
+          ? '${selectedTime!.hour}:${selectedTime!.minute}'
+          : '00:00',
+      'category': selectedCategory,
+    });
+
+    // Convert document reference to task object
+    task = Task(docRef.id, name ?? '', selectedDate ?? DateTime.now(),
+        selectedTime ?? TimeOfDay(hour: 0, minute: 0), selectedCategory);
+
+    // Schedule notification
+    NotificationService.showScheduledNotification(
+      id: task.id.hashCode,
+      title: 'Task Reminder',
+      body: 'Hey! Time to perform your task: ${task.name}',
+      scheduledDate: fullDateTime,
+    );
+
     _resetForm();
     Navigator.pop(
         context); // Close the bottom sheet after adding or editing task
