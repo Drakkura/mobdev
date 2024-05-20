@@ -254,12 +254,26 @@ class _DashboardState extends State<Dashboard> {
                                           MainAxisAlignment.spaceBetween,
                                       children: [
                                         Expanded(
-                                          child: Text(
-                                            task.name,
-                                            style: TextStyle(
-                                              fontSize: 16.0,
-                                              color: Colors.black,
-                                            ),
+                                          child: Column(
+                                            crossAxisAlignment:
+                                                CrossAxisAlignment.start,
+                                            children: [
+                                              Text(
+                                                task.name,
+                                                style: TextStyle(
+                                                  fontSize: 18.0,
+                                                  fontWeight: FontWeight.bold,
+                                                  color: Colors.black,
+                                                ),
+                                              ),
+                                              Text(
+                                                '${task.time.format(context)}', // Ensure TimeOfDay is formatted correctly
+                                                style: TextStyle(
+                                                  fontSize: 14.0,
+                                                  color: Colors.grey[600],
+                                                ),
+                                              ),
+                                            ],
                                           ),
                                         ),
                                         IconButton(
