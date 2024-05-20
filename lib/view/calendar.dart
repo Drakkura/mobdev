@@ -133,7 +133,7 @@ class _CalendarScreenState extends State<CalendarScreen> {
                 Task task = _visibleTasks[index];
                 return ListTile(
                   title: Text(task.name),
-                  subtitle: Text('${task.date} - ${task.time.format(context)}'),
+                  subtitle: Text('${task.time.format(context)}'),
                 );
               },
             ),

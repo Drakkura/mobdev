@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:login_sahabat_mahasiswa/view/widget/bottom.navigationbar.dart';
 import 'package:login_sahabat_mahasiswa/utils/colors.dart';
 import 'package:login_sahabat_mahasiswa/utils/date_time.dart';
+import 'package:intl/intl.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 
 class Task {
@@ -124,6 +125,18 @@ class _DashboardState extends State<Dashboard> {
     }
   }
 
+  Map<DateTime, List<Task>> groupTasksByDate(List<Task> tasks) {
+    Map<DateTime, List<Task>> map = {};
+    for (var task in tasks) {
+      DateTime date = DateTime(task.date.year, task.date.month, task.date.day);
+      if (!map.containsKey(date)) {
+        map[date] = [];
+      }
+      map[date]!.add(task);
+    }
+    return map;
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -156,129 +169,32 @@ class _DashboardState extends State<Dashboard> {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.stretch,
           children: [
-            SizedBox(
-              height: 40,
-              child: Row(
-                mainAxisAlignment: MainAxisAlignment.start,
-                children: [
-                  Expanded(
-                    child: Padding(
-                      padding: const EdgeInsets.only(
-                          right: 8.0), // Adjust the padding as needed
-                      child: TextField(
-                        decoration: InputDecoration(
-                          hintText: 'Cari tugas Hari ini',
-                          prefixIcon: const Icon(Icons.search),
-                          border: OutlineInputBorder(
-                            borderRadius: BorderRadius.circular(20.0),
-                          ),
+            Row(
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: predefinedCategories
+                  .map((category) => Padding(
+                        padding: const EdgeInsets.symmetric(horizontal: 4.0),
+                        child: ChoiceChip(
+                          label: Text(category),
+                          selected: selectedCategory == category,
+                          onSelected: (bool selected) {
+                            setState(() {
+                              selectedCategory = category;
+                            });
+                          },
                         ),
-                      ),
-                    ),
-                  ),
-                  Padding(
-                    padding: const EdgeInsets.only(
-                        left: 8.0), // Adjust the padding as needed
-                    child: SizedBox(
-                      width: MediaQuery.of(context).size.width / 4,
-                      height: 40,
-                      child: TextButton(
-                        onPressed: () {},
-                        style: ButtonStyle(
-                          backgroundColor: MaterialStateProperty.all<Color>(
-                            Colors.black.withOpacity(0.1),
-                          ),
-                          shape: MaterialStateProperty.all<OutlinedBorder>(
-                            RoundedRectangleBorder(
-                              borderRadius: BorderRadius.circular(20.0),
-                            ),
-                          ),
-                        ),
-                        child: const Icon(
-                          Icons.filter_alt,
-                          color: Colors.black,
-                        ),
-                      ),
-                    ),
-                  ),
-                ],
-              ),
+                      ))
+                  .toList(),
             ),
             const SizedBox(height: 16),
-            SingleChildScrollView(
-              scrollDirection: Axis.horizontal,
-              child: Row(
-                children: [
-                  ElevatedButton(
-                    onPressed: () {},
-                    style: ElevatedButton.styleFrom(
-                      shape: RoundedRectangleBorder(
-                        borderRadius: BorderRadius.circular(20.0),
-                      ),
-                    ),
-                    child: const Text(
-                      'Semua',
-                      style: TextStyle(color: Colors.black),
-                    ),
-                  ),
-                  SizedBox(width: 8.0), // Gap between buttons
-                  ElevatedButton(
-                    onPressed: () {},
-                    style: ElevatedButton.styleFrom(
-                      shape: RoundedRectangleBorder(
-                        borderRadius: BorderRadius.circular(20.0),
-                      ),
-                    ),
-                    child: const Text(
-                      'Kuliah',
-                      style: TextStyle(color: Colors.black),
-                    ),
-                  ),
-                  SizedBox(width: 8.0), // Gap between buttons
-                  ElevatedButton(
-                    onPressed: () {},
-                    style: ElevatedButton.styleFrom(
-                      shape: RoundedRectangleBorder(
-                        borderRadius: BorderRadius.circular(20.0),
-                      ),
-                    ),
-                    child: const Text(
-                      'Pribadi',
-                      style: TextStyle(color: Colors.black),
-                    ),
-                  ),
-                  SizedBox(width: 8.0), // Gap between buttons
-                  ElevatedButton(
-                    onPressed: () {},
-                    style: ElevatedButton.styleFrom(
-                      shape: RoundedRectangleBorder(
-                        borderRadius: BorderRadius.circular(20.0),
-                      ),
-                    ),
-                    child: const Text(
-                      'Belajar',
-                      style: TextStyle(color: Colors.black),
-                    ),
-                  ),
-                ],
-              ),
-            ),
-            const SizedBox(height: 16),
-            Text(
-              'Hari Ini',
-              style: TextStyle(
-                fontSize: 20.0,
-                fontWeight: FontWeight.bold,
-              ),
-            ),
             Expanded(
               child: StreamBuilder<QuerySnapshot>(
-                stream: _firestore.collection('tasks').snapshots(),
+                stream:
+                    _firestore.collection('tasks').orderBy('date').snapshots(),
                 builder: (context, snapshot) {
                   if (snapshot.hasError) {
                     return Text("Something went wrong");
                   }
-
                   if (!snapshot.hasData) {
                     return Center(child: CircularProgressIndicator());
                   }
@@ -296,62 +212,88 @@ class _DashboardState extends State<Dashboard> {
                     );
                   }).toList();
 
+                  var groupedTasks = groupTasksByDate(tasks);
+                  var sortedDates = groupedTasks.keys.toList()
+                    ..sort((a, b) => a.compareTo(b));
+
                   return ListView.builder(
-                    itemCount: tasks.length,
+                    itemCount: sortedDates.length,
                     itemBuilder: (context, index) {
-                      Task task = tasks[index];
-                      return Container(
-                        margin: const EdgeInsets.symmetric(vertical: 8.0),
-                        padding: const EdgeInsets.all(16.0),
-                        decoration: BoxDecoration(
-                          color: Colors.white,
-                          borderRadius: BorderRadius.circular(15.0),
-                          boxShadow: [
-                            BoxShadow(
-                              color: Colors.grey.withOpacity(0.5),
-                              offset: Offset(0, 3),
-                            ),
-                          ],
-                        ),
-                        child: Row(
-                          mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                          children: [
-                            Expanded(
-                              child: Text(
-                                task.name,
-                                style: TextStyle(
+                      var date = sortedDates[index];
+                      var tasksForDate = groupedTasks[date]!;
+                      return Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Padding(
+                            padding: const EdgeInsets.symmetric(vertical: 8.0),
+                            child: Text(
+                              DateFormat('EEEE, dd MMMM').format(date),
+                              style: TextStyle(
                                   fontSize: 16.0,
-                                  color: Colors.black,
-                                ),
-                              ),
+                                  fontWeight: FontWeight.bold,
+                                  color: Colors.grey[600]),
                             ),
-                            IconButton(
-                              icon: Icon(Icons.edit, color: Colors.blue),
-                              onPressed: () {
-                                currentTask = task;
-                                nameController.text = task.name;
-                                dateController.text =
-                                    '${task.date.day}/${task.date.month}/${task.date.year}';
-                                timeController.text =
-                                    '${task.time.hour}:${task.time.minute}';
-                                selectedCategory = task.category;
-                                selectedDate = task.date;
-                                selectedTime = task.time;
-                                showModalBottomSheet(
-                                  context: context,
-                                  isScrollControlled: true,
-                                  builder: (BuildContext context) {
-                                    return _buildBottomSheet();
-                                  },
-                                );
-                              },
-                            ),
-                            IconButton(
-                              icon: Icon(Icons.delete, color: Colors.red),
-                              onPressed: () => _deleteTask(task.id),
-                            ),
-                          ],
-                        ),
+                          ),
+                          ...tasksForDate
+                              .map((task) => Container(
+                                    margin: const EdgeInsets.symmetric(
+                                        vertical: 8.0),
+                                    padding: const EdgeInsets.all(16.0),
+                                    decoration: BoxDecoration(
+                                      color: Colors.white,
+                                      borderRadius: BorderRadius.circular(15.0),
+                                      boxShadow: [
+                                        BoxShadow(
+                                          color: Colors.grey.withOpacity(0.5),
+                                          offset: Offset(0, 3),
+                                        ),
+                                      ],
+                                    ),
+                                    child: Row(
+                                      mainAxisAlignment:
+                                          MainAxisAlignment.spaceBetween,
+                                      children: [
+                                        Expanded(
+                                          child: Text(
+                                            task.name,
+                                            style: TextStyle(
+                                              fontSize: 16.0,
+                                              color: Colors.black,
+                                            ),
+                                          ),
+                                        ),
+                                        IconButton(
+                                          icon: Icon(Icons.edit,
+                                              color: Colors.blue),
+                                          onPressed: () {
+                                            currentTask = task;
+                                            nameController.text = task.name;
+                                            dateController.text =
+                                                '${task.date.day}/${task.date.month}/${task.date.year}';
+                                            timeController.text =
+                                                '${task.time.hour}:${task.time.minute}';
+                                            selectedCategory = task.category;
+                                            selectedDate = task.date;
+                                            selectedTime = task.time;
+                                            showModalBottomSheet(
+                                              context: context,
+                                              isScrollControlled: true,
+                                              builder: (BuildContext context) {
+                                                return _buildBottomSheet();
+                                              },
+                                            );
+                                          },
+                                        ),
+                                        IconButton(
+                                          icon: Icon(Icons.delete,
+                                              color: Colors.red),
+                                          onPressed: () => _deleteTask(task.id),
+                                        ),
+                                      ],
+                                    ),
+                                  ))
+                              .toList(),
+                        ],
                       );
                     },
                   );
