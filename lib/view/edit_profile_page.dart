@@ -1,5 +1,7 @@
 import 'dart:io';
 
+import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:firebase_auth/firebase_auth.dart';
 import 'package:firebase_storage/firebase_storage.dart' as firebase_storage;
 import 'package:flutter/material.dart';
 import 'package:image_picker/image_picker.dart';
@@ -35,40 +37,36 @@ class _EditProfilePageState extends State<EditProfilePage> {
     usernameController = TextEditingController(text: widget.username);
     profileImageUrl = widget.profileImageUrl;
   }
-  Future<void> _uploadImageToFirebase(String filePath) async {
-  File file = File(filePath);
 
-  try {
-    // Unggah file ke Firebase Storage
-    firebase_storage.Reference ref = firebase_storage.FirebaseStorage.instance
-        .ref()
-        .child("profile_images")
-        // .child(widget.userId)
-        .child("profilepic.jpg"); // Ganti "profilepic.jpg" dengan nama file yang sesuai
-    await ref.putFile(file);
+  Future<void> _uploadImageToFirebase(String userId, String filePath) async {
+    File file = File(filePath);
 
-    // Dapatkan URL gambar yang diunggah
-    String imageUrl = await ref.getDownloadURL();
+    try {
+      // Upload file to Firebase Storage
+      firebase_storage.Reference ref = firebase_storage.FirebaseStorage.instance
+          .ref()
+          .child("profile_images")
+          .child(userId)
+          .child("profilepic.jpg"); // Change "profilepic.jpg" to appropriate file name
+      await ref.putFile(file);
 
-    // Perbarui profileImageUrl dengan URL gambar yang diunggah
-    setState(() {
-      profileImageUrl = imageUrl;
-    });
-  } catch (e) {
-    print('Error uploading image to Firebase Storage: $e');
+      // Get the uploaded image URL
+      String imageUrl = await ref.getDownloadURL();
+
+      // Update profileImageUrl with the uploaded image URL
+      setState(() {
+        profileImageUrl = imageUrl;
+      });
+    } catch (e) {
+      print('Error uploading image to Firebase Storage: $e');
+    }
   }
-}
 
   Future<void> _getImageFromGallery() async {
     final pickedFile = await _picker.pickImage(source: ImageSource.gallery);
 
     if (pickedFile != null) {
-      setState(() {
-        profileImageUrl = pickedFile.path;
-      });
-
-      // Upload image to Firebase Storage
-      await _uploadImageToFirebase(pickedFile.path);
+      await _uploadImageToFirebase(FirebaseAuth.instance.currentUser!.uid, pickedFile.path);
     }
   }
 
@@ -76,9 +74,7 @@ class _EditProfilePageState extends State<EditProfilePage> {
     final pickedFile = await _picker.pickImage(source: ImageSource.camera);
 
     if (pickedFile != null) {
-      setState(() {
-        profileImageUrl = pickedFile.path;
-      });
+      await _uploadImageToFirebase(FirebaseAuth.instance.currentUser!.uid, pickedFile.path);
     }
   }
 
@@ -118,8 +114,18 @@ class _EditProfilePageState extends State<EditProfilePage> {
     );
   }
 
+  Future<void> _updateUserProfile(String userId, Map<String, dynamic> updatedData) async {
+    try {
+      await FirebaseFirestore.instance.collection('users').doc(userId).update(updatedData);
+    } catch (e) {
+      print('Error updating user profile: $e');
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
+    final user = FirebaseAuth.instance.currentUser;
+
     return Scaffold(
       appBar: AppBar(
         title: const Text('Edit Profile'),
@@ -136,7 +142,7 @@ class _EditProfilePageState extends State<EditProfilePage> {
                   CircleAvatar(
                     radius: 50,
                     backgroundColor: const Color.fromARGB(255, 71, 76, 80),
-                    backgroundImage: FileImage(File(profileImageUrl)),
+                    backgroundImage: profileImageUrl.isNotEmpty ? NetworkImage(profileImageUrl) : null,
                   ),
                   Positioned(
                     bottom: 0,
@@ -176,15 +182,16 @@ class _EditProfilePageState extends State<EditProfilePage> {
             Center(
               child: ElevatedButton(
                 onPressed: () async {
-                  // Upload image to Firebase Storage
-                  await _uploadImageToFirebase(profileImageUrl);
-
-                  // Save changes
+                  // Save changes to Firestore
                   Map<String, String> updatedData = {
                     'name': nameController.text,
                     'username': usernameController.text,
                     'profileImageUrl': profileImageUrl,
                   };
+
+                  if (user != null) {
+                    await _updateUserProfile(user.uid, updatedData);
+                  }
 
                   // Return to ProfilePage with updated data
                   Navigator.pop(context, updatedData);

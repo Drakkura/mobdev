@@ -1,12 +1,13 @@
+import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
-import 'package:login_sahabat_mahasiswa/view/widget/bottom.navigationbar.dart';
+import 'package:flutter_local_notifications/flutter_local_notifications.dart';
+import 'package:intl/intl.dart';
 import 'package:login_sahabat_mahasiswa/utils/colors.dart';
 import 'package:login_sahabat_mahasiswa/utils/date_time.dart';
-import 'package:intl/intl.dart';
-import 'package:cloud_firestore/cloud_firestore.dart';
-import 'package:flutter_local_notifications/flutter_local_notifications.dart';
-import 'package:timezone/timezone.dart' as tz;
+import 'package:login_sahabat_mahasiswa/view/widget/bottom.navigationbar.dart';
 import 'package:timezone/data/latest.dart' as tz;
+import 'package:timezone/timezone.dart' as tz;
 
 class Task {
   String id;
@@ -69,6 +70,10 @@ class Dashboard extends StatefulWidget {
 }
 
 class _DashboardState extends State<Dashboard> {
+  late String namauser = "";
+  late String username = "";
+  final FirebaseFirestore _firestore = FirebaseFirestore.instance;
+  final _auth = FirebaseAuth.instance;
   final TextEditingController nameController = TextEditingController();
   final TextEditingController dateController = TextEditingController();
   final TextEditingController timeController = TextEditingController();
@@ -80,13 +85,35 @@ class _DashboardState extends State<Dashboard> {
   String? name; // Declare name variable here
   Task? currentTask; // To hold the task being edited
 
-  final FirebaseFirestore _firestore = FirebaseFirestore.instance;
   List<Task> tasks = [];
 
   @override
   void initState() {
     super.initState();
     _fetchTasks();
+    getUserDataFromFirestore();
+  }
+  String capitalize(String s) {
+    if (s.isEmpty) return s;
+    return s[0].toUpperCase() + s.substring(1);
+  }
+
+  Future<void> getUserDataFromFirestore() async {
+    try {
+      User? user = _auth.currentUser;
+      if (user != null) {
+        final snapshot = await _firestore.collection("users").doc(user.uid).get();
+
+        if (snapshot.exists) {
+          setState(() {
+            username = capitalize(snapshot.data()!['username']);
+            name = "${snapshot.data()!['firstName']} ${snapshot.data()!['lastName']}";
+          });
+        }
+      }
+    } catch (e) {
+      print("Error getting user data: $e");
+    }
   }
 
   Future<void> _fetchTasks() async {
@@ -201,11 +228,11 @@ class _DashboardState extends State<Dashboard> {
       appBar: AppBar(
         backgroundColor: GlobalColors.mainColor,
         automaticallyImplyLeading: false,
-        title: const Column(
+        title: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             Text(
-              'Halo Yoga',
+              "Halo "+ username,
               style: TextStyle(
                 fontSize: 18.0,
                 fontWeight: FontWeight.bold,

@@ -1,5 +1,3 @@
-import 'dart:io';
-
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
@@ -31,27 +29,37 @@ class ProfilePage extends StatefulWidget {
 
 class _ProfilePageState extends State<ProfilePage> {
   late String name = "";
-  late String username = ""; // Inisialisasi dengan string kosong
+  late String username = "";
   String profileImageUrl = "assets/images/logoaja.png";
   final _db = FirebaseFirestore.instance;
-  final _auth = FirebaseAuth.instance; // Menambahkan FirebaseAuth untuk mendapatkan UID pengguna saat ini
+  final _auth = FirebaseAuth.instance;
 
   @override
   void initState() {
     super.initState();
-    getUserDataFromFirestore(); // Panggil fungsi untuk mengambil data pengguna dari Firestore
+    getUserDataFromFirestore();
+  }
+
+  String capitalize(String s) {
+    if (s.isEmpty) return s;
+    return s[0].toUpperCase() + s.substring(1);
+  }
+
+  String capitalizeName(String fullName) {
+    return fullName.split(' ').map((word) => capitalize(word)).join(' ');
   }
 
   Future<void> getUserDataFromFirestore() async {
     try {
-      User? user = _auth.currentUser; // Dapatkan pengguna yang sedang login
+      User? user = _auth.currentUser;
       if (user != null) {
-        final snapshot = await _db.collection("users").doc(user.uid).get(); // Ambil data pengguna dari Firestore menggunakan UID
+        final snapshot = await _db.collection("users").doc(user.uid).get();
 
         if (snapshot.exists) {
           setState(() {
-            username = snapshot.data()!['username']; // Set state dengan username yang didapatkan dari Firestore
-            name = "${snapshot.data()!['firstName']} ${snapshot.data()!['lastName']}"; // Gabungkan firstname dan lastname
+            username = capitalize(snapshot.data()!['username']);
+            name = capitalizeName("${snapshot.data()!['firstName']} ${snapshot.data()!['lastName']}");
+            profileImageUrl = snapshot.data()!['profileImageUrl']; // Pastikan mengambil URL gambar profil
           });
         }
       }
@@ -114,7 +122,9 @@ class _ProfilePageState extends State<ProfilePage> {
                     CircleAvatar(
                       radius: 50,
                       backgroundColor: const Color.fromARGB(255, 71, 76, 80),
-                      backgroundImage: FileImage(File(profileImageUrl)),
+                      backgroundImage: profileImageUrl.isNotEmpty 
+                        ? NetworkImage(profileImageUrl) // Use NetworkImage for URL
+                        : AssetImage('assets/images/logoaja.png') as ImageProvider,
                     ),
                     Positioned(
                       bottom: 0,
