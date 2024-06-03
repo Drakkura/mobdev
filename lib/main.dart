@@ -7,22 +7,21 @@ import 'package:workmanager/workmanager.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:login_sahabat_mahasiswa/view/splash.view.dart';
 import 'package:flutter_local_notifications/flutter_local_notifications.dart';
+import 'package:firebase_messaging/firebase_messaging.dart';
 
 void callbackDispatcher() {
   Workmanager().executeTask((task, inputData) {
-    // Check your tasks and show notification
     return Future.value(true);
   });
 }
+
+String? globalFcmToken;
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
   await Firebase.initializeApp(
     options: DefaultFirebaseOptions.currentPlatform,
   );
-
-  // Initialize Notification Service here
-  NotificationService.initialize();
 
   Workmanager().initialize(
       callbackDispatcher, // The top-level function, aka callbackDispatcher
@@ -34,6 +33,11 @@ void main() async {
     "checkTasks",
     frequency: Duration(minutes: 15), // defines the frequency of task execution
   );
+
+  FirebaseMessaging messaging = FirebaseMessaging.instance;
+  String? token = await messaging.getToken();
+  globalFcmToken = token;
+  print("FCM Token: $token");
 
   runApp(const App());
 }
