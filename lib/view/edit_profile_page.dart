@@ -26,7 +26,8 @@ class _EditProfilePageState extends State<EditProfilePage> {
   final ImagePicker _picker = ImagePicker();
   late TextEditingController nameController;
   late TextEditingController usernameController;
-  TextEditingController passwordController = TextEditingController();
+  TextEditingController currentPasswordController = TextEditingController();
+  TextEditingController newPasswordController = TextEditingController();
   String profileImageUrl = "";
   String newPassword = "";
 
@@ -42,7 +43,6 @@ class _EditProfilePageState extends State<EditProfilePage> {
     File file = File(filePath);
 
     try {
-      // Upload file to Firebase Storage
       firebase_storage.Reference ref = firebase_storage.FirebaseStorage.instance
           .ref()
           .child("profile_images")
@@ -50,10 +50,8 @@ class _EditProfilePageState extends State<EditProfilePage> {
           .child("profilepic.jpg"); // Change "profilepic.jpg" to appropriate file name
       await ref.putFile(file);
 
-      // Get the uploaded image URL
       String imageUrl = await ref.getDownloadURL();
 
-      // Update profileImageUrl with the uploaded image URL
       setState(() {
         profileImageUrl = imageUrl;
       });
@@ -122,6 +120,49 @@ class _EditProfilePageState extends State<EditProfilePage> {
     }
   }
 
+  Future<void> _changePassword(String currentPassword, String newPassword) async {
+    final user = FirebaseAuth.instance.currentUser;
+
+    if (user != null) {
+      // Create an AuthCredential with the current email and password
+      AuthCredential credential = EmailAuthProvider.credential(
+        email: user.email!,
+        password: currentPassword,
+      );
+
+      try {
+        // Reauthenticate the user
+        await user.reauthenticateWithCredential(credential);
+
+        // Update the password
+        await user.updatePassword(newPassword);
+      } catch (e) {
+        print('Error changing password: $e');
+        throw e;
+      }
+    }
+  }
+
+  void _showErrorDialog(String message) {
+    showDialog(
+      context: context,
+      builder: (BuildContext context) {
+        return AlertDialog(
+          title: Text("Error"),
+          content: Text(message),
+          actions: [
+            TextButton(
+              onPressed: () {
+                Navigator.of(context).pop();
+              },
+              child: Text("OK"),
+            ),
+          ],
+        );
+      },
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     final user = FirebaseAuth.instance.currentUser;
@@ -171,30 +212,42 @@ class _EditProfilePageState extends State<EditProfilePage> {
             ),
             const SizedBox(height: 10),
             TextFormField(
-              controller: passwordController,
+              controller: currentPasswordController,
+              decoration: const InputDecoration(labelText: 'Current Password'),
+              obscureText: true,
+            ),
+            const SizedBox(height: 10),
+            TextFormField(
+              controller: newPasswordController,
               decoration: const InputDecoration(labelText: 'New Password'),
               obscureText: true,
-              onChanged: (value) {
-                newPassword = value;
-              },
             ),
             const SizedBox(height: 20),
             Center(
               child: ElevatedButton(
                 onPressed: () async {
-                  // Save changes to Firestore
-                  Map<String, String> updatedData = {
-                    'name': nameController.text,
-                    'username': usernameController.text,
-                    'profileImageUrl': profileImageUrl,
-                  };
+                  try {
+                    // Verify current password and change to new password
+                    if (currentPasswordController.text.isNotEmpty && newPasswordController.text.isNotEmpty) {
+                      await _changePassword(currentPasswordController.text, newPasswordController.text);
+                    }
 
-                  if (user != null) {
-                    await _updateUserProfile(user.uid, updatedData);
+                    // Save changes to Firestore
+                    Map<String, String> updatedData = {
+                      'name': nameController.text,
+                      'username': usernameController.text,
+                      'profileImageUrl': profileImageUrl,
+                    };
+
+                    if (user != null) {
+                      await _updateUserProfile(user.uid, updatedData);
+                    }
+
+                    // Return to ProfilePage with updated data
+                    Navigator.pop(context, updatedData);
+                  } catch (e) {
+                    _showErrorDialog("Current password is incorrect.");
                   }
-
-                  // Return to ProfilePage with updated data
-                  Navigator.pop(context, updatedData);
                 },
                 style: ElevatedButton.styleFrom(
                   backgroundColor: GlobalColors.secondColor,
