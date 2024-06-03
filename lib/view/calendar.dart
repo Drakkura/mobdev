@@ -18,7 +18,7 @@ class _CalendarScreenState extends State<CalendarScreen> {
   DateTime? _selectedDay;
   List<Task> _tasks = [];
   List<Task> _visibleTasks = [];
-  int _visibleCount = 3; // Number of tasks to show initially
+  int _visibleCount = 3;
 
   FirebaseFirestore _firestore = FirebaseFirestore.instance;
 
@@ -71,6 +71,12 @@ class _CalendarScreenState extends State<CalendarScreen> {
     }
   }
 
+  List<DateTime> _getDatesWithTasks() {
+    return _tasks
+        .map((task) => DateTime(task.date.year, task.date.month, task.date.day))
+        .toList();
+  }
+
   @override
   Widget build(BuildContext context) {
     _updateVisibleTasks(); // Update visible tasks whenever the state updates
@@ -101,7 +107,7 @@ class _CalendarScreenState extends State<CalendarScreen> {
                   _selectedDay = selectedDay;
                   _focusedDay = focusedDay;
                   _visibleCount =
-                      3; // Reset visible count on new date selection
+                      3; // berapa yg nampil
                   _updateVisibleTasks();
                 });
               },
@@ -115,6 +121,30 @@ class _CalendarScreenState extends State<CalendarScreen> {
               onPageChanged: (focusedDay) {
                 _focusedDay = focusedDay;
               },
+              eventLoader: (day) {
+                return _tasks
+                    .where((task) => isSameDay(task.date, day))
+                    .toList();
+              },
+              calendarBuilders: CalendarBuilders(
+                markerBuilder: (context, date, events) {
+                  if (events.isNotEmpty) {
+                    return Positioned(
+                      right: 1,
+                      bottom: 1,
+                      child: Container(
+                        width: 7,
+                        height: 7,
+                        decoration: BoxDecoration(
+                          shape: BoxShape.circle,
+                          color: Colors.red,
+                        ),
+                      ),
+                    );
+                  }
+                  return null;
+                },
+              ),
             ),
           ),
           Expanded(
@@ -143,4 +173,14 @@ class _CalendarScreenState extends State<CalendarScreen> {
       bottomNavigationBar: CustomBottomNavigationBar(),
     );
   }
+}
+
+class Task {
+  final String id;
+  final String name;
+  final DateTime date;
+  final TimeOfDay time;
+  final String category;
+
+  Task(this.id, this.name, this.date, this.time, this.category);
 }

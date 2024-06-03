@@ -19,49 +19,6 @@ class Task {
   Task(this.id, this.name, this.date, this.time, this.category);
 }
 
-
-class NotificationService {
-  static final FlutterLocalNotificationsPlugin _notificationsPlugin = FlutterLocalNotificationsPlugin();
-
-  static void initialize() {
-    tz.initializeTimeZones(); // important if you're going to use time zones
-
-    final InitializationSettings initializationSettings = InitializationSettings(
-      android: AndroidInitializationSettings('@mipmap/ic_launcher'),
-    );
-
-    _notificationsPlugin.initialize(initializationSettings);
-  }
-
-  static Future<void> showScheduledNotification({
-    required int id,
-    required String title,
-    required String body,
-    required DateTime scheduledDate,
-  }) async {
-    var androidDetails = AndroidNotificationDetails(
-      'task_id_$id',
-      'Task Reminders',
-      channelDescription: 'Channel for task reminder notifications',
-      importance: Importance.max,
-      priority: Priority.high,
-    );
-
-    var notificationDetails = NotificationDetails(android: androidDetails);
-
-    await _notificationsPlugin.zonedSchedule(
-      id,
-      title,
-      body,
-      tz.TZDateTime.from(scheduledDate, tz.local), // Convert scheduledDate to time zone-aware date
-      notificationDetails,
-      androidAllowWhileIdle: true,
-      uiLocalNotificationDateInterpretation: UILocalNotificationDateInterpretation.absoluteTime,
-      matchDateTimeComponents: DateTimeComponents.time, // This can be adjusted based on how exact the timing needs to be
-    );
-  }
-}
-
 class Dashboard extends StatefulWidget {
   const Dashboard({Key? key}) : super(key: key);
 
@@ -93,6 +50,7 @@ class _DashboardState extends State<Dashboard> {
     _fetchTasks();
     getUserDataFromFirestore();
   }
+
   String capitalize(String s) {
     if (s.isEmpty) return s;
     return s[0].toUpperCase() + s.substring(1);
@@ -102,12 +60,14 @@ class _DashboardState extends State<Dashboard> {
     try {
       User? user = _auth.currentUser;
       if (user != null) {
-        final snapshot = await _firestore.collection("users").doc(user.uid).get();
+        final snapshot =
+            await _firestore.collection("users").doc(user.uid).get();
 
         if (snapshot.exists) {
           setState(() {
             username = capitalize(snapshot.data()!['username']);
-            name = "${snapshot.data()!['firstName']} ${snapshot.data()!['lastName']}";
+            name =
+                "${snapshot.data()!['firstName']} ${snapshot.data()!['lastName']}";
           });
         }
       }
@@ -158,14 +118,6 @@ class _DashboardState extends State<Dashboard> {
     // Convert document reference to task object
     task = Task(docRef.id, name ?? '', selectedDate ?? DateTime.now(),
         selectedTime ?? TimeOfDay(hour: 0, minute: 0), selectedCategory);
-
-    // Schedule notification
-    NotificationService.showScheduledNotification(
-      id: task.id.hashCode,
-      title: 'Task Reminder',
-      body: 'Hey! Time to perform your task: ${task.name}',
-      scheduledDate: fullDateTime,
-    );
 
     _resetForm();
     Navigator.pop(
@@ -232,7 +184,7 @@ class _DashboardState extends State<Dashboard> {
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             Text(
-              "Halo "+ username,
+              "Halo " + username,
               style: TextStyle(
                 fontSize: 18.0,
                 fontWeight: FontWeight.bold,
