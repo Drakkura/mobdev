@@ -171,100 +171,102 @@ class _EditProfilePageState extends State<EditProfilePage> {
       appBar: AppBar(
         title: const Text('Edit Profile'),
       ),
-      body: Padding(
-        padding: const EdgeInsets.symmetric(horizontal: 16.0),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.center,
-          children: <Widget>[
-            GestureDetector(
-              onTap: _selectImage,
-              child: Stack(
-                children: [
-                  CircleAvatar(
-                    radius: 50,
-                    backgroundColor: const Color.fromARGB(255, 71, 76, 80),
-                    backgroundImage: profileImageUrl.isNotEmpty ? NetworkImage(profileImageUrl) : null,
-                  ),
-                  Positioned(
-                    bottom: 0,
-                    right: 0,
-                    child: Container(
-                      decoration: const BoxDecoration(
-                        shape: BoxShape.circle,
-                        color: Colors.white,
+      body: SingleChildScrollView(
+        child: Padding(
+          padding: const EdgeInsets.symmetric(horizontal: 16.0),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.center,
+            children: <Widget>[
+              GestureDetector(
+                onTap: _selectImage,
+                child: Stack(
+                  children: [
+                    CircleAvatar(
+                      radius: 50,
+                      backgroundColor: const Color.fromARGB(255, 71, 76, 80),
+                      backgroundImage: profileImageUrl.isNotEmpty ? NetworkImage(profileImageUrl) : null,
+                    ),
+                    Positioned(
+                      bottom: 0,
+                      right: 0,
+                      child: Container(
+                        decoration: const BoxDecoration(
+                          shape: BoxShape.circle,
+                          color: Colors.white,
+                        ),
+                        padding: const EdgeInsets.all(4),
+                        child: const Icon(Icons.edit),
                       ),
-                      padding: const EdgeInsets.all(4),
-                      child: const Icon(Icons.edit),
+                    ),
+                  ],
+                ),
+              ),
+              const SizedBox(height: 20),
+              TextFormField(
+                controller: firstNameController,
+                decoration: const InputDecoration(labelText: 'First Name'),
+              ),
+              const SizedBox(height: 10),
+              TextFormField(
+                controller: lastNameController,
+                decoration: const InputDecoration(labelText: 'Last Name'),
+              ),
+              const SizedBox(height: 10),
+              TextFormField(
+                controller: usernameController,
+                decoration: const InputDecoration(labelText: 'Username'),
+              ),
+              const SizedBox(height: 10),
+              TextFormField(
+                controller: currentPasswordController,
+                decoration: const InputDecoration(labelText: 'Current Password'),
+                obscureText: true,
+              ),
+              const SizedBox(height: 10),
+              TextFormField(
+                controller: newPasswordController,
+                decoration: const InputDecoration(labelText: 'New Password'),
+                obscureText: true,
+              ),
+              const SizedBox(height: 20),
+              Center(
+                child: ElevatedButton(
+                  onPressed: () async {
+                    try {
+                      if (currentPasswordController.text.isNotEmpty && newPasswordController.text.isNotEmpty) {
+                        await _changePassword(currentPasswordController.text, newPasswordController.text);
+                      }
+
+                      Map<String, String> updatedData = {
+                        'firstName': firstNameController.text,
+                        'lastName': lastNameController.text,
+                        'username': usernameController.text,
+                        'profileImageUrl': profileImageUrl,
+                      };
+
+                      if (user != null) {
+                        await _updateUserProfile(user.uid, updatedData);
+                      }
+
+                      Navigator.pop(context, updatedData);
+                    } catch (e) {
+                      _showErrorDialog("Current password is incorrect.");
+                    }
+                  },
+                  
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor: GlobalColors.secondColor,
+                  ),
+                  child: Text(
+                    'Save',
+                    style: TextStyle(
+                      color: Colors.white,
                     ),
                   ),
-                ],
-              ),
-            ),
-            const SizedBox(height: 20),
-            TextFormField(
-              controller: firstNameController,
-              decoration: const InputDecoration(labelText: 'First Name'),
-            ),
-            const SizedBox(height: 10),
-            TextFormField(
-              controller: lastNameController,
-              decoration: const InputDecoration(labelText: 'Last Name'),
-            ),
-            const SizedBox(height: 10),
-            TextFormField(
-              controller: usernameController,
-              decoration: const InputDecoration(labelText: 'Username'),
-            ),
-            const SizedBox(height: 10),
-            TextFormField(
-              controller: currentPasswordController,
-              decoration: const InputDecoration(labelText: 'Current Password'),
-              obscureText: true,
-            ),
-            const SizedBox(height: 10),
-            TextFormField(
-              controller: newPasswordController,
-              decoration: const InputDecoration(labelText: 'New Password'),
-              obscureText: true,
-            ),
-            const SizedBox(height: 20),
-            Center(
-              child: ElevatedButton(
-                onPressed: () async {
-                  try {
-                    if (currentPasswordController.text.isNotEmpty && newPasswordController.text.isNotEmpty) {
-                      await _changePassword(currentPasswordController.text, newPasswordController.text);
-                    }
-
-                    Map<String, String> updatedData = {
-                      'firstName': firstNameController.text,
-                      'lastName': lastNameController.text,
-                      'username': usernameController.text,
-                      'profileImageUrl': profileImageUrl,
-                    };
-
-                    if (user != null) {
-                      await _updateUserProfile(user.uid, updatedData);
-                    }
-
-                    Navigator.pop(context, updatedData);
-                  } catch (e) {
-                    _showErrorDialog("Current password is incorrect.");
-                  }
-                },
-                style: ElevatedButton.styleFrom(
-                  backgroundColor: GlobalColors.secondColor,
-                ),
-                child: Text(
-                  'Save',
-                  style: TextStyle(
-                    color: Colors.white,
-                  ),
                 ),
               ),
-            ),
-            const SizedBox(height: 50),
-          ],
+            ],
+          ),
         ),
       ),
     );
