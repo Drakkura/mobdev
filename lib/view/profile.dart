@@ -67,6 +67,7 @@ class _ProfilePageState extends State<ProfilePage> {
         if (snapshot.exists) {
           setState(() {
             username = capitalize(snapshot.data()!['username']);
+            //name = capitalize(snapshot.data()!['name']);
             name = capitalizeName("${snapshot.data()!['firstName']} ${snapshot.data()!['lastName']}");
             profileImageUrl = snapshot.data()!['profileImageUrl']; // Ensure the profile image URL is fetched
           });
@@ -150,7 +151,8 @@ class _ProfilePageState extends State<ProfilePage> {
                               context,
                               MaterialPageRoute(
                                 builder: (context) => EditProfilePage(
-                                  name: name,
+                                  firstName: name.split(' ')[0],
+                                  lastName: name.split(' ').sublist(1).join(' '),
                                   username: username,
                                   profileImageUrl: profileImageUrl,
                                 ),
@@ -159,7 +161,7 @@ class _ProfilePageState extends State<ProfilePage> {
 
                             if (result != null && result is Map<String, String>) {
                               setState(() {
-                                name = result['name']!;
+                                name = "${result['firstName']} ${result['lastName']}";
                                 username = result['username']!;
                                 profileImageUrl = result['profileImageUrl']!;
                               });

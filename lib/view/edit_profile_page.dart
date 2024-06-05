@@ -8,12 +8,14 @@ import 'package:image_picker/image_picker.dart';
 import 'package:login_sahabat_mahasiswa/utils/colors.dart';
 
 class EditProfilePage extends StatefulWidget {
-  final String name;
+  final String firstName;
+  final String lastName;
   final String username;
   final String profileImageUrl;
 
   EditProfilePage({
-    required this.name,
+    required this.firstName,
+    required this.lastName,
     required this.username,
     required this.profileImageUrl,
   });
@@ -24,7 +26,8 @@ class EditProfilePage extends StatefulWidget {
 
 class _EditProfilePageState extends State<EditProfilePage> {
   final ImagePicker _picker = ImagePicker();
-  late TextEditingController nameController;
+  late TextEditingController firstNameController;
+  late TextEditingController lastNameController;
   late TextEditingController usernameController;
   TextEditingController currentPasswordController = TextEditingController();
   TextEditingController newPasswordController = TextEditingController();
@@ -34,7 +37,8 @@ class _EditProfilePageState extends State<EditProfilePage> {
   @override
   void initState() {
     super.initState();
-    nameController = TextEditingController(text: widget.name);
+    firstNameController = TextEditingController(text: widget.firstName);
+    lastNameController = TextEditingController(text: widget.lastName);
     usernameController = TextEditingController(text: widget.username);
     profileImageUrl = widget.profileImageUrl;
   }
@@ -47,7 +51,7 @@ class _EditProfilePageState extends State<EditProfilePage> {
           .ref()
           .child("profile_images")
           .child(userId)
-          .child("profilepic.jpg"); // Change "profilepic.jpg" to appropriate file name
+          .child("profilepic.jpg");
       await ref.putFile(file);
 
       String imageUrl = await ref.getDownloadURL();
@@ -124,17 +128,13 @@ class _EditProfilePageState extends State<EditProfilePage> {
     final user = FirebaseAuth.instance.currentUser;
 
     if (user != null) {
-      // Create an AuthCredential with the current email and password
       AuthCredential credential = EmailAuthProvider.credential(
         email: user.email!,
         password: currentPassword,
       );
 
       try {
-        // Reauthenticate the user
         await user.reauthenticateWithCredential(credential);
-
-        // Update the password
         await user.updatePassword(newPassword);
       } catch (e) {
         print('Error changing password: $e');
@@ -202,8 +202,13 @@ class _EditProfilePageState extends State<EditProfilePage> {
             ),
             const SizedBox(height: 20),
             TextFormField(
-              controller: nameController,
-              decoration: const InputDecoration(labelText: 'Name'),
+              controller: firstNameController,
+              decoration: const InputDecoration(labelText: 'First Name'),
+            ),
+            const SizedBox(height: 10),
+            TextFormField(
+              controller: lastNameController,
+              decoration: const InputDecoration(labelText: 'Last Name'),
             ),
             const SizedBox(height: 10),
             TextFormField(
@@ -227,14 +232,13 @@ class _EditProfilePageState extends State<EditProfilePage> {
               child: ElevatedButton(
                 onPressed: () async {
                   try {
-                    // Verify current password and change to new password
                     if (currentPasswordController.text.isNotEmpty && newPasswordController.text.isNotEmpty) {
                       await _changePassword(currentPasswordController.text, newPasswordController.text);
                     }
 
-                    // Save changes to Firestore
                     Map<String, String> updatedData = {
-                      'name': nameController.text,
+                      'firstName': firstNameController.text,
+                      'lastName': lastNameController.text,
                       'username': usernameController.text,
                       'profileImageUrl': profileImageUrl,
                     };
@@ -243,7 +247,6 @@ class _EditProfilePageState extends State<EditProfilePage> {
                       await _updateUserProfile(user.uid, updatedData);
                     }
 
-                    // Return to ProfilePage with updated data
                     Navigator.pop(context, updatedData);
                   } catch (e) {
                     _showErrorDialog("Current password is incorrect.");
@@ -260,6 +263,7 @@ class _EditProfilePageState extends State<EditProfilePage> {
                 ),
               ),
             ),
+            const SizedBox(height: 50),
           ],
         ),
       ),
