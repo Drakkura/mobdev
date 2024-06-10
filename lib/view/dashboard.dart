@@ -170,6 +170,13 @@ class _DashboardState extends State<Dashboard> {
     return map;
   }
 
+  List<Task> filterTasksByCategory(String category, List<Task> tasks) {
+    if (category == 'All') {
+      return tasks;
+    }
+    return tasks.where((task) => task.category == category).toList();
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -204,20 +211,32 @@ class _DashboardState extends State<Dashboard> {
           children: [
             Row(
               mainAxisAlignment: MainAxisAlignment.center,
-              children: predefinedCategories
-                  .map((category) => Padding(
-                        padding: const EdgeInsets.symmetric(horizontal: 4.0),
-                        child: ChoiceChip(
-                          label: Text(category),
-                          selected: selectedCategory == category,
-                          onSelected: (bool selected) {
-                            setState(() {
-                              selectedCategory = category;
-                            });
-                          },
-                        ),
-                      ))
-                  .toList(),
+              children: [
+                ...predefinedCategories.map((category) => Padding(
+                      padding: const EdgeInsets.symmetric(horizontal: 4.0),
+                      child: ChoiceChip(
+                        label: Text(category),
+                        selected: selectedCategory == category,
+                        onSelected: (bool selected) {
+                          setState(() {
+                            selectedCategory = category;
+                          });
+                        },
+                      ),
+                    )),
+                Padding(
+                  padding: const EdgeInsets.symmetric(horizontal: 4.0),
+                  child: ChoiceChip(
+                    label: Text('All'),
+                    selected: selectedCategory == 'All',
+                    onSelected: (bool selected) {
+                      setState(() {
+                        selectedCategory = 'All';
+                      });
+                    },
+                  ),
+                ),
+              ],
             ),
             const SizedBox(height: 16),
             Expanded(
@@ -245,9 +264,11 @@ class _DashboardState extends State<Dashboard> {
                     );
                   }).toList();
 
+                  tasks = filterTasksByCategory(selectedCategory, tasks);
+
                   var groupedTasks = groupTasksByDate(tasks);
                   var sortedDates = groupedTasks.keys.toList()
-                    ..sort((a, b) => a.compareTo(b));
+                    ..sort((b, a) => a.compareTo(b));
 
                   return ListView.builder(
                     itemCount: sortedDates.length,
