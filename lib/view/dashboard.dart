@@ -78,9 +78,9 @@ class _DashboardState extends State<Dashboard> {
 
   Future<void> _fetchTasks() async {
     var querySnapshot = await _firestore.collection('tasks').get();
-    tasks = querySnapshot.docs.map((doc) {
+    for (var doc in querySnapshot.docs) {
       var data = doc.data();
-      return Task(
+      tasks.add(Task(
         doc.id,
         data['name'],
         (data['date'] as Timestamp).toDate(),
@@ -88,8 +88,8 @@ class _DashboardState extends State<Dashboard> {
             hour: int.parse(data['time'].split(':')[0]),
             minute: int.parse(data['time'].split(':')[1])),
         data['category'],
-      );
-    }).toList();
+      ));
+    }
     setState(() {});
   }
 
@@ -164,7 +164,7 @@ class _DashboardState extends State<Dashboard> {
 
   Map<DateTime, List<Task>> groupTasksByDate(List<Task> tasks) {
     Map<DateTime, List<Task>> map = {};
-    for (var task in tasks.where((task) => task.category == selectedCategory)) {
+    for (var task in tasks) {
       DateTime date = DateTime(task.date.year, task.date.month, task.date.day);
       if (!map.containsKey(date)) {
         map[date] = [];
@@ -225,87 +225,131 @@ class _DashboardState extends State<Dashboard> {
             ),
             const SizedBox(height: 16),
             Expanded(
-              child: tasks.isNotEmpty
-                  ? ListView.builder(
-                      itemCount: groupTasksByDate(tasks).length,
-                      itemBuilder: (context, index) {
-                        var groupedTasks = groupTasksByDate(tasks);
-                        var sortedDates = groupedTasks.keys.toList()
-                          ..sort((b, a) => a.compareTo(b));
+              child: StreamBuilder<QuerySnapshot>(
+                stream:
+                    _firestore.collection('tasks').orderBy('date').snapshots(),
+                builder: (context, snapshot) {
+                  if (snapshot.hasError) {
+                    return Text("Something went wrong");
+                  }
+                  if (!snapshot.hasData) {
+                    return Center(child: CircularProgressIndicator());
+                  }
 
-                        var date = sortedDates[index];
-                        var tasksForDate = groupedTasks[date]!;
-                        return Column(
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          children: [
-                            Padding(
-                              padding:
-                                  const EdgeInsets.symmetric(vertical: 8.0),
-                              child: Text(
-                                DateFormat('EEEE, dd MMMM').format(date),
-                                style: TextStyle(
-                                    fontSize: 16.0,
-                                    fontWeight: FontWeight.bold,
-                                    color: Colors.grey[600]),
-                              ),
+                  List<Task> tasks = snapshot.data!.docs.map((doc) {
+                    var data = doc.data() as Map<String, dynamic>;
+                    return Task(
+                      doc.id,
+                      data['name'],
+                      (data['date'] as Timestamp).toDate(),
+                      TimeOfDay(
+                          hour: int.parse(data['time'].split(':')[0]),
+                          minute: int.parse(data['time'].split(':')[1])),
+                      data['category'],
+                    );
+                  }).toList();
+
+                  var groupedTasks = groupTasksByDate(tasks);
+                  var sortedDates = groupedTasks.keys.toList()
+                    ..sort((a, b) => a.compareTo(b));
+
+                  return ListView.builder(
+                    itemCount: sortedDates.length,
+                    itemBuilder: (context, index) {
+                      var date = sortedDates[index];
+                      var tasksForDate = groupedTasks[date]!;
+                      return Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Padding(
+                            padding: const EdgeInsets.symmetric(vertical: 8.0),
+                            child: Text(
+                              DateFormat('EEEE, dd MMMM').format(date),
+                              style: TextStyle(
+                                  fontSize: 16.0,
+                                  fontWeight: FontWeight.bold,
+                                  color: Colors.grey[600]),
                             ),
-                            ...tasksForDate
-                                .where(
-                                    (task) => task.category == selectedCategory)
-                                .map((task) => Container(
-                                      margin: const EdgeInsets.symmetric(
-                                          vertical: 8.0),
-                                      padding: const EdgeInsets.all(16.0),
-                                      decoration: BoxDecoration(
-                                        color: Colors.white,
-                                        borderRadius:
-                                            BorderRadius.circular(15.0),
-                                        boxShadow: [
-                                          BoxShadow(
-                                            color: Colors.grey.withOpacity(0.5),
-                                            offset: Offset(0, 3),
-                                          ),
-                                        ],
-                                      ),
-                                      child: Row(
-                                        mainAxisAlignment:
-                                            MainAxisAlignment.spaceBetween,
-                                        children: [
-                                          Expanded(
-                                            child: Column(
-                                              crossAxisAlignment:
-                                                  CrossAxisAlignment.start,
-                                              children: [
-                                                Text(
-                                                  task.name,
-                                                  style: TextStyle(
-                                                    fontSize: 18.0,
-                                                    fontWeight: FontWeight.bold,
-                                                    color: Colors.black,
-                                                  ),
+                          ),
+                          ...tasksForDate
+                              .map((task) => Container(
+                                    margin: const EdgeInsets.symmetric(
+                                        vertical: 8.0),
+                                    padding: const EdgeInsets.all(16.0),
+                                    decoration: BoxDecoration(
+                                      color: Colors.white,
+                                      borderRadius: BorderRadius.circular(15.0),
+                                      boxShadow: [
+                                        BoxShadow(
+                                          color: Colors.grey.withOpacity(0.5),
+                                          offset: Offset(0, 3),
+                                        ),
+                                      ],
+                                    ),
+                                    child: Row(
+                                      mainAxisAlignment:
+                                          MainAxisAlignment.spaceBetween,
+                                      children: [
+                                        Expanded(
+                                          child: Column(
+                                            crossAxisAlignment:
+                                                CrossAxisAlignment.start,
+                                            children: [
+                                              Text(
+                                                task.name,
+                                                style: TextStyle(
+                                                  fontSize: 18.0,
+                                                  fontWeight: FontWeight.bold,
+                                                  color: Colors.black,
                                                 ),
-                                                Text(
-                                                  '${task.time.format(context)}',
-                                                  style: TextStyle(
-                                                    fontSize: 14.0,
-                                                    color: Colors.grey[600],
-                                                  ),
+                                              ),
+                                              Text(
+                                                '${task.time.format(context)}', // Ensure TimeOfDay is formatted correctly
+                                                style: TextStyle(
+                                                  fontSize: 14.0,
+                                                  color: Colors.grey[600],
                                                 ),
-                                              ],
-                                            ),
+                                              ),
+                                            ],
                                           ),
-                                          // Edit and Delete buttons
-                                        ],
-                                      ),
-                                    ))
-                                .toList(),
-                          ],
-                        );
-                      },
-                    )
-                  : Center(
-                      child: Text('No tasks found'),
-                    ),
+                                        ),
+                                        IconButton(
+                                          icon: Icon(Icons.edit,
+                                              color: Colors.blue),
+                                          onPressed: () {
+                                            currentTask = task;
+                                            nameController.text = task.name;
+                                            dateController.text =
+                                                '${task.date.day}/${task.date.month}/${task.date.year}';
+                                            timeController.text =
+                                                '${task.time.hour}:${task.time.minute}';
+                                            selectedCategory = task.category;
+                                            selectedDate = task.date;
+                                            selectedTime = task.time;
+                                            showModalBottomSheet(
+                                              context: context,
+                                              isScrollControlled: true,
+                                              builder: (BuildContext context) {
+                                                return _buildBottomSheet();
+                                              },
+                                            );
+                                          },
+                                        ),
+                                        IconButton(
+                                          icon: Icon(Icons.delete,
+                                              color: Colors.red),
+                                          onPressed: () => _deleteTask(task.id),
+                                        ),
+                                      ],
+                                    ),
+                                  ))
+                              .toList(),
+                        ],
+                      );
+                    },
+                  );
+                },
+              ),
             ),
           ],
         ),

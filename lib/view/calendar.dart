@@ -106,7 +106,8 @@ class _CalendarScreenState extends State<CalendarScreen> {
                 setState(() {
                   _selectedDay = selectedDay;
                   _focusedDay = focusedDay;
-                  _visibleCount = 3; // berapa yg nampil
+                  _visibleCount =
+                      3; // berapa yg nampil
                   _updateVisibleTasks();
                 });
               },
