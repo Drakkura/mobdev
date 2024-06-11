@@ -67,9 +67,8 @@ class _ProfilePageState extends State<ProfilePage> {
         if (snapshot.exists) {
           setState(() {
             username = capitalize(snapshot.data()!['username']);
-            //name = capitalize(snapshot.data()!['name']);
             name = capitalizeName("${snapshot.data()!['firstName']} ${snapshot.data()!['lastName']}");
-            profileImageUrl = snapshot.data()!['profileImageUrl']; // Ensure the profile image URL is fetched
+            profileImageUrl = snapshot.data()!['profileImageUrl']; 
           });
         }
       }
