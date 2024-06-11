@@ -1,9 +1,13 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_local_notifications/flutter_local_notifications.dart';
 import 'package:intl/intl.dart';
 import 'package:login_sahabat_mahasiswa/utils/colors.dart';
+import 'package:login_sahabat_mahasiswa/utils/date_time.dart';
 import 'package:login_sahabat_mahasiswa/view/widget/bottom.navigationbar.dart';
+import 'package:timezone/data/latest.dart' as tz;
+import 'package:timezone/timezone.dart' as tz;
 
 class Task {
   String id;
@@ -32,7 +36,7 @@ class _DashboardState extends State<Dashboard> {
   final TextEditingController timeController = TextEditingController();
 
   List<String> predefinedCategories = ['Kuliah', 'Pribadi', 'Belajar'];
-  String selectedCategory = 'All';
+  String selectedCategory = 'Kuliah';
   DateTime? selectedDate;
   TimeOfDay? selectedTime;
   String? name; // Declare name variable here
@@ -124,7 +128,7 @@ class _DashboardState extends State<Dashboard> {
     nameController.clear();
     dateController.clear();
     timeController.clear();
-    selectedCategory = 'All';
+    selectedCategory = predefinedCategories[0];
     currentTask = null;
     setState(() {});
   }
@@ -388,96 +392,94 @@ class _DashboardState extends State<Dashboard> {
   }
 
   Widget _buildBottomSheet() {
-    return Padding(
-      padding: MediaQuery.of(context).viewInsets,
-      child: Padding(
-        padding: const EdgeInsets.all(16.0),
-        child: Column(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            TextField(
-              controller: nameController,
-              decoration: InputDecoration(
-                labelText: 'Task Name',
-                border: OutlineInputBorder(),
+    return SingleChildScrollView(
+      child: Center(
+        child: Container(
+          padding: const EdgeInsets.all(16.0),
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: <Widget>[
+              TextField(
+                decoration: const InputDecoration(
+                  labelText: 'Nama',
+                  border: OutlineInputBorder(),
+                ),
+                controller: nameController,
+                onChanged: (value) => name = value,
               ),
-            ),
-            const SizedBox(height: 16.0),
-            TextField(
-              controller: dateController,
-              decoration: InputDecoration(
-                labelText: 'Date',
-                border: OutlineInputBorder(),
+              const SizedBox(height: 16),
+              TextField(
+                readOnly: true,
+                controller: dateController,
+                onTap: () => _selectDate(context),
+                decoration: const InputDecoration(
+                  labelText: 'Tanggal',
+                  border: OutlineInputBorder(),
+                  suffixIcon: Icon(Icons.calendar_today),
+                ),
               ),
-              onTap: () async {
-                FocusScope.of(context).requestFocus(new FocusNode());
-                DateTime? picked = await showDatePicker(
-                  context: context,
-                  initialDate: selectedDate ?? DateTime.now(),
-                  firstDate: DateTime.now(),
-                  lastDate: DateTime(2101),
-                );
-                if (picked != null) {
+              const SizedBox(height: 16),
+              TextField(
+                readOnly: true,
+                controller: timeController,
+                onTap: () => _selectTime(context),
+                decoration: const InputDecoration(
+                  labelText: 'Jam',
+                  border: OutlineInputBorder(),
+                  suffixIcon: Icon(Icons.access_time),
+                ),
+              ),
+              const SizedBox(height: 16),
+              DropdownButtonFormField<String>(
+                value: selectedCategory,
+                onChanged: (String? newValue) {
                   setState(() {
-                    selectedDate = picked;
-                    dateController.text =
-                        "${picked.day}/${picked.month}/${picked.year}";
+                    selectedCategory = newValue!;
                   });
-                }
-              },
-            ),
-            const SizedBox(height: 16.0),
-            TextField(
-              controller: timeController,
-              decoration: InputDecoration(
-                labelText: 'Time',
-                border: OutlineInputBorder(),
+                },
+                items: predefinedCategories.map((String category) {
+                  return DropdownMenuItem<String>(
+                    value: category,
+                    child: Text(category),
+                  );
+                }).toList(),
+                decoration: const InputDecoration(
+                  labelText: 'Category',
+                  border: OutlineInputBorder(),
+                ),
               ),
-              onTap: () async {
-                FocusScope.of(context).requestFocus(new FocusNode());
-                TimeOfDay? picked = await showTimePicker(
-                  context: context,
-                  initialTime: selectedTime ?? TimeOfDay.now(),
-                );
-                if (picked != null) {
-                  setState(() {
-                    selectedTime = picked;
-                    timeController.text =
-                        "${picked.hour.toString().padLeft(2, '0')}:${picked.minute.toString().padLeft(2, '0')}";
-                  });
-                }
-              },
-            ),
-            const SizedBox(height: 16.0),
-            DropdownButtonFormField<String>(
-              value: selectedCategory,
-              onChanged: (newValue) {
-                setState(() {
-                  selectedCategory = newValue!;
-                });
-              },
-              items: predefinedCategories
-                  .map((category) => DropdownMenuItem(
-                        value: category,
-                        child: Text(category),
-                      ))
-                  .toList(),
-              decoration: InputDecoration(
-                labelText: 'Category',
-                border: OutlineInputBorder(),
+              const SizedBox(height: 16),
+              ElevatedButton(
+                onPressed: () => _addOrEditTask(currentTask),
+                child: Text(currentTask == null ? 'Add Task' : 'Update Task'),
               ),
-            ),
-            const SizedBox(height: 16.0),
-            ElevatedButton(
-              onPressed: () {
-                name = nameController.text; // Assign value to name
-                _addOrEditTask(currentTask);
-              },
-              child: Text(currentTask == null ? 'Add Task' : 'Update Task'),
-            ),
-          ],
+            ],
+          ),
         ),
       ),
     );
+  }
+
+  Future<void> _selectDate(BuildContext context) async {
+    final DateTime? pickedDate =
+        await DateTimePicker.selectDate(context, selectedDate);
+    if (pickedDate != null && pickedDate != selectedDate) {
+      setState(() {
+        selectedDate = pickedDate;
+        dateController.text =
+            "${selectedDate!.day}/${selectedDate!.month}/${selectedDate!.year}";
+      });
+    }
+  }
+
+  Future<void> _selectTime(BuildContext context) async {
+    final TimeOfDay? pickedTime =
+        await DateTimePicker.selectTime(context, selectedTime);
+    if (pickedTime != null && pickedTime != selectedTime) {
+      setState(() {
+        selectedTime = pickedTime;
+        timeController.text = "${selectedTime!.hour}:${selectedTime!.minute}";
+      });
+    }
   }
 }
