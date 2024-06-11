@@ -192,7 +192,7 @@ class _DashboardState extends State<Dashboard> {
               ),
             ),
             Text(
-              '3 Tugas Mendatang',
+              'Update your schedule here',
               style: TextStyle(
                 fontSize: 14.0,
                 color: Colors.white,
