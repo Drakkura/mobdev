@@ -31,6 +31,54 @@ class _ProfilePageState extends State<ProfilePage> {
   String name = "Yoga Ananta Elfaraby";
   String username = "Tobanga";
   String profileImageUrl = "assets/images/logoaja.png";
+<<<<<<< Updated upstream
+=======
+  final _db = FirebaseFirestore.instance;
+  final _auth = FirebaseAuth.instance;
+  final Map<String, int> weeklyTaskCompletion = {
+    'Senin': 2,
+    'Selasa': 4,
+    'Rabu': 3,
+    'Kamis': 5,
+    'Jumat': 1,
+    'Sabtu': 6,
+    'Minggu': 3,
+  };
+
+  @override
+  void initState() {
+    super.initState();
+    getUserDataFromFirestore();
+  }
+
+  String capitalize(String s) {
+    if (s.isEmpty) return s;
+    return s[0].toUpperCase() + s.substring(1);
+  }
+
+  String capitalizeName(String fullName) {
+    return fullName.split(' ').map((word) => capitalize(word)).join(' ');
+  }
+
+  Future<void> getUserDataFromFirestore() async {
+    try {
+      User? user = _auth.currentUser;
+      if (user != null) {
+        final snapshot = await _db.collection("users").doc(user.uid).get();
+
+        if (snapshot.exists) {
+          setState(() {
+            username = capitalize(snapshot.data()!['username']);
+            name = capitalizeName("${snapshot.data()!['firstName']} ${snapshot.data()!['lastName']}");
+            profileImageUrl = snapshot.data()!['profileImageUrl']; 
+          });
+        }
+      }
+    } catch (e) {
+      print("Error getting user data: $e");
+    }
+  }
+>>>>>>> Stashed changes
 
   @override
   Widget build(BuildContext context) {
